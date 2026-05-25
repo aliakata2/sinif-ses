@@ -1,929 +1,624 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Duru'nun LGS Asistanı</title>
-  <style>
-    :root {
-      --accent:#5DCAA5;--accent-dark:#1D9E75;--accent-light:#E1F5EE;
-      --purple:#7F77DD;--purple-light:#EEEDFE;
-      --amber:#EF9F27;--amber-light:#FAEEDA;--warn-text:#854F0B;
-      --red:#E24B4A;--red-light:#FDEAEA;
-      --star:#F5C518;
-      --bg:#f8f7f4;--bg-card:#ffffff;--bg-sec:#f1efe8;
-      --border:rgba(0,0,0,0.1);--text:#1a1a18;--text-sec:#5f5e5a;--text-hint:#888780;
-      --radius-md:8px;--radius-lg:12px;
-    }
-    @media(prefers-color-scheme:dark){:root{
-      --bg:#1a1a18;--bg-card:#26262a;--bg-sec:#2c2c2a;
-      --border:rgba(255,255,255,0.1);--text:#f1efe8;--text-sec:#b4b2a9;--text-hint:#888780;
-      --accent-light:#085041;--purple-light:#26215C;--amber-light:#412402;--warn-text:#FAC775;
-      --red-light:#3a1010;
-    }}
-    *{box-sizing:border-box;margin:0;padding:0;}
-    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
-    .app{max-width:680px;margin:0 auto;padding:1.5rem 1rem 4rem;}
-    .header{display:flex;align-items:center;gap:14px;margin-bottom:1.5rem;}
-    .avatar{width:48px;height:48px;border-radius:50%;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600;color:var(--accent-dark);flex-shrink:0;}
-    .header h1{font-size:19px;font-weight:600;}
-    .header p{font-size:13px;color:var(--text-sec);margin-top:2px;}
-    .tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:1.5rem;overflow-x:auto;}
-    .tab{flex:1;min-width:60px;padding:10px 4px;font-size:11px;font-weight:500;border:none;background:none;color:var(--text-sec);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;font-family:inherit;transition:color .2s;white-space:nowrap;}
-    .tab.active{color:var(--accent-dark);border-bottom-color:var(--accent-dark);}
-    .tab:hover:not(.active){color:var(--text);}
-    .section{display:none;}.section.active{display:block;}
-    .card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;margin-bottom:1rem;}
-    .card-title{font-size:14px;font-weight:600;margin-bottom:6px;}
-    .card-desc{font-size:13px;color:var(--text-sec);margin-bottom:1rem;line-height:1.5;}
-    .alert{padding:12px 16px;border-radius:var(--radius-md);font-size:13px;margin-bottom:1rem;display:flex;align-items:flex-start;gap:10px;line-height:1.5;}
-    .alert-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
-    .alert.info{background:var(--purple-light);color:var(--purple);border:1px solid rgba(127,119,221,.3);}
-    .alert.success{background:var(--accent-light);color:var(--accent-dark);border:1px solid rgba(93,202,165,.3);}
-    .alert.warn{background:var(--amber-light);color:var(--warn-text);border:1px solid rgba(239,159,39,.3);}
-    .alert.danger{background:var(--red-light);color:var(--red);border:1px solid rgba(226,75,74,.3);}
-    .btn{padding:8px 18px;border-radius:var(--radius-md);border:1px solid var(--border);background:var(--bg-card);color:var(--text);font-size:13px;font-family:inherit;cursor:pointer;transition:background .15s;}
-    .btn:hover{background:var(--bg-sec);}
-    .btn.primary{background:var(--accent-dark);color:#fff;border-color:var(--accent-dark);}
-    .btn.primary:hover{background:#0F6E56;}
-    .btn.danger{background:var(--red);color:#fff;border-color:var(--red);}
-    .btn.big{width:100%;padding:14px;font-size:14px;font-weight:600;border-radius:var(--radius-md);margin-bottom:8px;cursor:pointer;font-family:inherit;border:none;}
-    .btn.big.dalma{background:var(--amber-light);color:var(--warn-text);}
-    .btn.big.odak{background:var(--accent);color:#fff;}
-    .btn.big.odak:hover{background:var(--accent-dark);}
-    .btn.big.purple{background:var(--purple-light);color:var(--purple);}
-    .timer-center{text-align:center;}
-    .timer-display{font-size:64px;font-weight:300;letter-spacing:-3px;font-variant-numeric:tabular-nums;color:var(--text);margin-bottom:4px;}
-    .timer-mode{display:inline-flex;gap:4px;margin-bottom:.5rem;background:var(--bg-sec);border-radius:99px;padding:3px;}
-    .timer-mode button{padding:4px 14px;border-radius:99px;border:none;background:none;font-size:12px;color:var(--text-sec);cursor:pointer;font-family:inherit;}
-    .timer-mode button.active{background:var(--bg-card);color:var(--accent-dark);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.1);}
-    .timer-sub{font-size:12px;color:var(--text-hint);margin-bottom:1.5rem;}
-    .progress-bar{height:6px;background:var(--bg-sec);border-radius:99px;overflow:hidden;margin-bottom:1.5rem;}
-    .progress-fill{height:100%;background:var(--accent);border-radius:99px;transition:width 1s linear;}
-    .timer-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:1.5rem;}
-    .pomo-dots{display:flex;gap:8px;justify-content:center;}
-    .dot{width:12px;height:12px;border-radius:50%;background:var(--bg-sec);border:1px solid var(--border);transition:background .3s;}
-    .dot.done{background:var(--accent);border-color:var(--accent-dark);}
-    .subject-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:1rem;}
-    .subject-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px;}
-    .subject-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
-    .subject-name{font-size:13px;font-weight:600;}
-    .subject-badge{font-size:11px;padding:2px 8px;border-radius:99px;background:var(--bg-sec);color:var(--text-sec);}
-    .subject-badge.done{background:var(--accent-light);color:var(--accent-dark);}
-    .subject-pct{font-size:12px;color:var(--text-sec);margin-bottom:5px;}
-    .mini-bar{height:4px;background:var(--bg-sec);border-radius:99px;overflow:hidden;margin-bottom:8px;}
-    .mini-fill{height:100%;border-radius:99px;transition:width .3s;}
-    .q-btns{display:flex;gap:4px;}
-    .q-btns button{flex:1;padding:4px 0;font-size:12px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);color:var(--text);cursor:pointer;font-family:inherit;}
-    .q-btns button:hover{background:var(--bg-sec);}
-    .q-btns button.plus{background:var(--accent-light);color:var(--accent-dark);border-color:transparent;}
-    .q-btns button.plus:hover{background:#9FE1CB;}
-    .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:1rem;}
-    .stat-card{background:var(--bg-sec);border-radius:var(--radius-md);padding:14px;text-align:center;}
-    .stat-num{font-size:24px;font-weight:600;color:var(--text);}
-    .stat-lbl{font-size:12px;color:var(--text-sec);margin-top:2px;}
-    .hint-box{background:var(--bg-sec);border-radius:var(--radius-md);padding:12px 14px;font-size:13px;color:var(--text-sec);line-height:1.6;display:none;margin-top:8px;}
-    .hint-box.show{display:block;}
-    /* Ses ölçer */
-    .db-display{font-size:52px;font-weight:300;letter-spacing:-2px;text-align:center;margin:0.5rem 0;transition:color .3s;}
-    .db-display.ok{color:var(--accent-dark);}
-    .db-display.loud{color:var(--red);}
-    .db-bar-wrap{height:20px;background:var(--bg-sec);border-radius:99px;overflow:hidden;margin:0.75rem 0;}
-    .db-bar-fill{height:100%;border-radius:99px;transition:width .15s,background .3s;}
-    .db-threshold{font-size:12px;color:var(--text-hint);text-align:center;margin-bottom:1rem;}
-    .star-row{display:flex;flex-wrap:wrap;gap:6px;min-height:32px;align-items:center;}
-    .star{font-size:22px;animation:starPop .35s cubic-bezier(.17,.67,.83,.67);}
-    @keyframes starPop{0%{transform:scale(0) rotate(-20deg);}60%{transform:scale(1.3) rotate(5deg);}100%{transform:scale(1) rotate(0deg);}}
-    .star-countdown{font-size:13px;color:var(--text-sec);display:flex;align-items:center;gap:6px;margin-top:6px;}
-    .star-progress-wrap{flex:1;height:6px;background:var(--bg-sec);border-radius:99px;overflow:hidden;}
-    .star-progress-fill{height:100%;background:var(--star);border-radius:99px;transition:width 1s linear;}
-    /* İstatistik */
-    .week-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
-    .week-nav span{font-size:14px;font-weight:600;}
-    .week-nav button{padding:6px 14px;}
-    .day-bars{display:flex;gap:8px;align-items:flex-end;height:140px;margin-bottom:.5rem;}
-    .week-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:1rem;}
-    .week-stat{background:var(--bg-sec);border-radius:var(--radius-md);padding:10px;text-align:center;}
-    .week-stat .num{font-size:18px;font-weight:600;}
-    .week-stat .lbl{font-size:11px;color:var(--text-sec);margin-top:2px;}
-    .subject-week{margin-top:1rem;}
-    .subject-week-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
-    .subject-week-name{font-size:13px;width:70px;flex-shrink:0;}
-    .subject-week-bar-wrap{flex:1;height:8px;background:var(--bg-sec);border-radius:99px;overflow:hidden;}
-    .subject-week-bar{height:100%;border-radius:99px;}
-    .subject-week-val{font-size:12px;color:var(--text-sec);width:50px;text-align:right;flex-shrink:0;}
-    .history-list{margin-top:1rem;}
-    .history-day{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 16px;margin-bottom:8px;}
-    .history-day-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
-    .history-day-date{font-size:13px;font-weight:600;}
-    .history-day-total{font-size:13px;color:var(--accent-dark);font-weight:600;}
-    .history-day-subjects{font-size:12px;color:var(--text-sec);}
-    .history-day-stars{font-size:13px;margin-top:4px;}
-    .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 20px;font-size:13px;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,.12);transition:transform .3s ease;z-index:999;white-space:nowrap;}
-    .toast.show{transform:translateX(-50%) translateY(0);}
-    .footer{text-align:center;margin-top:2rem;font-size:12px;color:var(--text-hint);}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Sessizlik Oyunu</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --green:#1D9E75; --green-light:#E1F5EE; --green-dark:#0F6E56;
+  --red:#E24B4A; --red-light:#FCEBEB; --red-dark:#A32D2D;
+  --amber:#EF9F27; --amber-light:#FAEEDA; --amber-dark:#BA7517;
+  --blue:#2176AE; --blue-light:#E6F1FB;
+  --bg:#F7F7F5; --card:#FFFFFF; --border:rgba(0,0,0,0.08);
+  --text:#1a1a1a; --muted:#888; --radius:16px;
+}
+body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+.wrap { max-width:480px; margin:0 auto; padding:16px; }
+
+/* ŞUBE GİRİŞ EKRANI */
+.screen { display:none; }
+.screen.active { display:block; }
+.start-screen { text-align:center; padding:40px 16px; }
+.start-screen .logo { font-size:52px; margin-bottom:12px; }
+.start-screen h1 { font-size:22px; font-weight:800; margin-bottom:4px; }
+.start-screen p { font-size:13px; color:var(--muted); margin-bottom:32px; }
+.sube-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:16px; box-shadow:0 1px 4px rgba(0,0,0,0.05); text-align:left; }
+.sube-card label { font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:8px; }
+.sube-input-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.sinif-sel { flex:1; min-width:80px; padding:10px 12px; border-radius:10px; border:1.5px solid var(--border); font-family:'Nunito',sans-serif; font-size:15px; font-weight:700; background:var(--bg); color:var(--text); appearance:none; -webkit-appearance:none; }
+.sinif-sel:focus { outline:none; border-color:var(--green); }
+.sube-btns { display:flex; gap:6px; flex-wrap:wrap; }
+.sube-btn { padding:8px 16px; border-radius:10px; border:1.5px solid var(--border); background:var(--bg); font-family:'Nunito',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:all 0.15s; color:var(--text); }
+.sube-btn.sel { background:var(--green); color:#fff; border-color:var(--green); }
+.sube-btn:active { transform:scale(0.96); }
+.btn-basla { width:100%; padding:16px; border-radius:14px; border:none; background:var(--green); color:#fff; font-family:'Nunito',sans-serif; font-size:16px; font-weight:800; cursor:pointer; transition:all 0.15s; margin-top:8px; }
+.btn-basla:disabled { background:#ccc; color:#999; }
+.btn-basla:active { transform:scale(0.98); }
+.secim-label { font-size:15px; font-weight:800; color:var(--green); margin-top:12px; min-height:24px; text-align:center; }
+
+/* ÖLÇÜM EKRANI */
+.header { display:flex; align-items:center; gap:10px; padding:8px 0 14px; }
+.header-back { background:none; border:none; font-size:20px; cursor:pointer; padding:4px 8px; border-radius:8px; }
+.header-back:active { background:var(--border); }
+.header-title { font-size:16px; font-weight:800; }
+.header-sube { font-size:13px; font-weight:700; color:var(--green); background:var(--green-light); padding:3px 10px; border-radius:20px; margin-left:auto; }
+.mic-err { background:var(--red-light); color:var(--red-dark); border-radius:10px; padding:10px 14px; font-size:13px; margin-bottom:12px; display:none; }
+.top-row { display:flex; gap:10px; margin-bottom:12px; }
+.meter-box { flex:0 0 130px; background:var(--card); border-radius:var(--radius); border:1px solid var(--border); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:16px 8px; box-shadow:0 1px 4px rgba(0,0,0,0.04); }
+.db-big { font-size:54px; font-weight:800; line-height:1; color:var(--text); transition:color 0.2s; }
+.db-unit { font-size:12px; color:var(--muted); margin-top:2px; }
+.status-pill { margin-top:8px; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; background:var(--bg); color:var(--muted); transition:all 0.2s; }
+.info-grid { flex:1; display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.info-card { background:var(--card); border-radius:12px; border:1px solid var(--border); padding:10px 12px; box-shadow:0 1px 4px rgba(0,0,0,0.04); }
+.info-card .lbl { font-size:10px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px; }
+.info-card .val { font-size:20px; font-weight:800; color:var(--text); }
+.threshold-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px; margin-bottom:12px; box-shadow:0 1px 4px rgba(0,0,0,0.04); }
+.threshold-card .lbl { font-size:11px; color:var(--muted); font-weight:600; margin-bottom:8px; }
+.thresh-row { display:flex; align-items:center; gap:10px; }
+.thresh-row input[type=range] { flex:1; accent-color:var(--green); }
+.thresh-val { font-size:14px; font-weight:700; color:var(--text); min-width:48px; text-align:right; }
+.btn-row { display:flex; gap:8px; margin-bottom:12px; }
+.btn { flex:1; padding:12px 8px; border-radius:12px; border:none; font-family:'Nunito',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:all 0.15s; }
+.btn:active { transform:scale(0.97); }
+.btn-start { background:var(--green); color:#fff; }
+.btn-start:disabled { background:#ccc; color:#999; }
+.btn-pause { background:var(--amber); color:#fff; }
+.btn-pause:disabled { background:#ccc; color:#999; }
+.btn-reset { background:var(--card); color:var(--text); border:1px solid var(--border); }
+.chart-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px; margin-bottom:12px; box-shadow:0 1px 4px rgba(0,0,0,0.04); }
+.chart-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.chart-header span { font-size:11px; color:var(--muted); font-weight:600; }
+.live-dot { color:var(--green); font-weight:700; font-size:11px; display:none; }
+canvas { width:100%; display:block; border-radius:8px; }
+.stars-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px; margin-bottom:12px; box-shadow:0 1px 4px rgba(0,0,0,0.04); }
+.stars-card .lbl { font-size:11px; color:var(--muted); font-weight:600; margin-bottom:10px; }
+.stars-row { display:flex; gap:6px; flex-wrap:wrap; }
+.star-slot { width:38px; height:38px; border-radius:50%; background:var(--bg); border:1.5px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:20px; color:#ddd; transition:all 0.3s; }
+.star-slot.earned { background:var(--amber-light); border-color:var(--amber); color:var(--amber); transform:scale(1.1); }
+
+/* KUTLAMA */
+.celebrate { display:none; background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:24px 16px; text-align:center; margin-bottom:12px; box-shadow:0 1px 4px rgba(0,0,0,0.04); }
+.celebrate.show { display:block; }
+.celebrate .emoji { font-size:56px; line-height:1; margin-bottom:8px; }
+.celebrate h2 { font-size:20px; font-weight:800; margin-bottom:6px; }
+.celebrate p { font-size:13px; color:var(--muted); margin-bottom:14px; }
+.celebrate-btns { display:flex; gap:8px; }
+.celebrate-btns .btn { flex:1; }
+
+/* KARŞILAŞTIRMA EKRANI */
+.comp-header { display:flex; align-items:center; gap:10px; padding:8px 0 14px; }
+.comp-title { font-size:16px; font-weight:800; }
+.comp-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:14px; margin-bottom:12px; box-shadow:0 1px 4px rgba(0,0,0,0.04); }
+.comp-card .lbl { font-size:11px; color:var(--muted); font-weight:600; margin-bottom:10px; }
+.empty-msg { text-align:center; color:var(--muted); font-size:13px; padding:24px 0; }
+.history-list { display:flex; flex-direction:column; gap:8px; }
+.hist-item { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:10px; background:var(--bg); }
+.hist-sube { font-size:13px; font-weight:800; min-width:44px; }
+.hist-bar-wrap { flex:1; height:10px; background:var(--border); border-radius:6px; overflow:hidden; }
+.hist-bar { height:100%; border-radius:6px; background:var(--amber); transition:width 0.5s; }
+.hist-stars { font-size:13px; font-weight:700; color:var(--amber-dark); min-width:36px; text-align:right; }
+.hist-date { font-size:10px; color:var(--muted); min-width:48px; text-align:right; }
+.clear-btn { width:100%; padding:10px; border-radius:10px; border:1px solid var(--red-light); background:var(--red-light); color:var(--red-dark); font-family:'Nunito',sans-serif; font-size:13px; font-weight:700; cursor:pointer; margin-top:4px; }
+.clear-btn:active { transform:scale(0.98); }
+.nav-tabs { display:flex; gap:0; background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:16px; box-shadow:0 1px 4px rgba(0,0,0,0.04); }
+.nav-tab { flex:1; padding:12px 8px; border:none; background:none; font-family:'Nunito',sans-serif; font-size:13px; font-weight:700; cursor:pointer; color:var(--muted); transition:all 0.15s; }
+.nav-tab.active { background:var(--green); color:#fff; border-radius:12px; }
+.nav-tab:active { transform:scale(0.97); }
+.ranking-badge { font-size:18px; margin-right:4px; }
+.chart-wrap-comp { position:relative; height:200px; }
+</style>
 </head>
 <body>
-<div class="app">
-  <div class="header">
-    <div class="avatar">D</div>
-    <div>
-      <h1>Duru'nun LGS Asistanı</h1>
-      <p>8. sınıf · Odaklanma & Görev Takibi</p>
+<div class="wrap">
+
+<!-- ŞUBE SEÇİM EKRANI -->
+<div id="screenSube" class="screen active">
+  <div class="start-screen">
+    <div class="logo">🎓</div>
+    <h1>Sınıf Ses Ölçer</h1>
+    <p>Deniz Öğretmen'in sınıf yardımcısı</p>
+
+    <div class="sube-card">
+      <label>Sınıf Seçin</label>
+      <div class="sube-input-row">
+        <select class="sinif-sel" id="sinifSel" onchange="updateSecim()">
+          <option value="">-- sınıf --</option>
+          <option>1</option><option>2</option><option>3</option>
+          <option>4</option><option>5</option><option>6</option>
+          <option>7</option><option>8</option>
+        </select>
+        <div class="sube-btns" id="subeBtns">
+          <button class="sube-btn" onclick="secSube(this,'A')">A</button>
+          <button class="sube-btn" onclick="secSube(this,'B')">B</button>
+          <button class="sube-btn" onclick="secSube(this,'C')">C</button>
+          <button class="sube-btn" onclick="secSube(this,'D')">D</button>
+          <button class="sube-btn" onclick="secSube(this,'E')">E</button>
+        </div>
+      </div>
+      <div class="secim-label" id="secimLabel">Sınıf ve şube seçin</div>
     </div>
+
+    <button class="btn-basla" id="btnBasla" onclick="goDers()" disabled>▶ Derse Başla</button>
+    <button class="btn-basla" style="background:var(--card);color:var(--text);border:1px solid var(--border);margin-top:8px;" onclick="goComp()">📊 Şube Karşılaştır</button>
   </div>
-
-  <div class="tabs">
-    <button class="tab active" onclick="showTab('pomodoro',this)">⏱ Pomodoro</button>
-    <button class="tab" onclick="showTab('gorevler',this)">✅ Görevler</button>
-    <button class="tab" onclick="showTab('ses',this)">🎤 Ses</button>
-    <button class="tab" onclick="showTab('odak',this)">🧠 Odak</button>
-    <button class="tab" onclick="showTab('istatistik',this)">📊 İstatistik</button>
-  </div>
-
-  <!-- POMODORO -->
-  <div class="section active" id="tab-pomodoro">
-    <div id="focus-alert" class="alert warn" style="display:none">
-      <span class="alert-icon">🔔</span>
-      <span>Duru, dalmış olabilirsin! Nerede kaldığını bul ve devam et.</span>
-    </div>
-    <div class="card timer-center">
-      <div class="timer-mode">
-        <button class="active" id="mode-work" onclick="setMode('work')">30 dk Ders</button>
-        <button id="mode-break" onclick="setMode('break')">10 dk Mola</button>
-      </div>
-      <div class="timer-display" id="timer-display">30:00</div>
-      <div class="timer-sub" id="timer-sub">Çalışma süresi · 4 tur hedefi</div>
-      <div class="progress-bar"><div class="progress-fill" id="timer-progress" style="width:100%"></div></div>
-      <div class="timer-btns">
-        <button class="btn primary" id="start-btn" onclick="toggleTimer()">▶ Başlat</button>
-        <button class="btn" onclick="resetTimer()">↺ Sıfırla</button>
-        <button class="btn" onclick="setMode('break')">☕ Mola</button>
-      </div>
-      <div id="mic-status-row" style="display:none;align-items:center;justify-content:center;gap:8px;margin-bottom:1rem;">
-        <span id="mic-status-dot" style="width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block;animation:pulse 1.5s infinite;"></span>
-        <span id="mic-status-lbl" style="font-size:12px;color:var(--text-sec);">Ses ölçer aktif</span>
-        <button class="btn" id="mic-pause-btn" onclick="toggleMicPause()" style="font-size:11px;padding:4px 12px;">⏸ Geçici Durdur</button>
-      </div>
-      <style>@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}</style>
-      <div class="pomo-dots" id="pomo-dots">
-        <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
-      </div>
-    </div>
-    <div id="break-alert" class="alert success" style="display:none">
-      <span class="alert-icon">⭐</span>
-      <span>Harika! 1 tur tamamlandı. 10 dakika mola hakkın var.</span>
-    </div>
-
-    <!-- Canlı Ses Paneli -->
-    <div class="card" id="live-sound-panel" style="display:none">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span id="live-dot" style="width:9px;height:9px;border-radius:50%;background:var(--accent);display:inline-block;animation:pulse 1.5s infinite;flex-shrink:0;"></span>
-          <span style="font-size:13px;font-weight:600;">Canlı Ses Takibi</span>
-        </div>
-        <button class="btn" id="live-pause-btn" onclick="toggleMicPause()" style="font-size:11px;padding:4px 12px;">⏸ Durdur</button>
-      </div>
-
-      <!-- dB metre -->
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-        <div style="font-size:11px;color:var(--text-hint);width:24px;text-align:right;">dB</div>
-        <div style="flex:1;height:14px;background:var(--bg-sec);border-radius:99px;overflow:hidden;position:relative;">
-          <div id="live-db-bar" style="height:100%;width:0%;border-radius:99px;background:var(--accent);transition:width .12s;"></div>
-          <!-- 50 dB eşik çizgisi ~%42 -->
-          <div style="position:absolute;top:0;bottom:0;left:42%;width:2px;background:var(--amber);opacity:.7;"></div>
-        </div>
-        <div id="live-db-val" style="font-size:14px;font-weight:600;width:48px;text-align:right;font-variant-numeric:tabular-nums;">-- dB</div>
-      </div>
-
-      <!-- Sessizlik süresi + sonraki yıldız -->
-      <div style="display:flex;gap:10px;margin-bottom:12px;">
-        <div style="flex:1;background:var(--bg-sec);border-radius:var(--radius-md);padding:10px;text-align:center;">
-          <div id="live-quiet-time" style="font-size:20px;font-weight:600;font-variant-numeric:tabular-nums;">00:00</div>
-          <div style="font-size:11px;color:var(--text-sec);margin-top:2px;">Sessiz kalınan süre</div>
-        </div>
-        <div style="flex:1;background:var(--bg-sec);border-radius:var(--radius-md);padding:10px;text-align:center;">
-          <div style="font-size:11px;color:var(--text-sec);margin-bottom:4px;">Sonraki ⭐</div>
-          <div style="height:6px;background:var(--bg-card);border-radius:99px;overflow:hidden;margin-bottom:4px;">
-            <div id="live-star-bar" style="height:100%;background:var(--star);border-radius:99px;width:0%;transition:width 1s linear;"></div>
-          </div>
-          <div id="live-star-countdown" style="font-size:14px;font-weight:600;color:var(--star);font-variant-numeric:tabular-nums;">5:00</div>
-        </div>
-      </div>
-
-      <!-- Bugünkü yıldızlar -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-        <div style="font-size:12px;color:var(--text-sec);">Bugün kazanılan yıldızlar</div>
-        <div id="live-star-count" style="font-size:13px;font-weight:600;color:var(--star);">0 ⭐</div>
-      </div>
-      <div id="live-star-row" style="min-height:28px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;">
-        <span style="font-size:12px;color:var(--text-hint);">Sessiz çalışmaya devam!</span>
-      </div>
-
-      <div id="live-loud-alert" class="alert danger" style="display:none;margin-top:10px;">
-        <span class="alert-icon">📢</span>
-        <span id="live-loud-text">Gürültü! Sayaç sıfırlandı.</span>
-      </div>
-    </div>
-
-    <div class="card" id="pomo-info-card">
-      <div class="card-title">Bu çalışma sistemi hakkında</div>
-      <div class="card-desc">30 dk çalış → 10 dk mola. Dalma uyarıları her 7 dakikada bir otomatik çıkar. Ses ölçer açıksa her 5 sessiz dakikaya 1 ⭐ kazanırsın!</div>
-    </div>
-  </div>
-
-  <!-- GÖREVLER -->
-  <div class="section" id="tab-gorevler">
-    <div class="alert info"><span class="alert-icon">☀️</span><span>Her dersten 20 soru hedefi · Sabah erken başla!</span></div>
-    <div class="subject-grid" id="subject-grid"></div>
-    <div class="stat-row">
-      <div class="stat-card"><div class="stat-num" id="total-done">0</div><div class="stat-lbl">Çözülen soru</div></div>
-      <div class="stat-card"><div class="stat-num" id="total-target">120</div><div class="stat-lbl">Toplam hedef</div></div>
-      <div class="stat-card"><div class="stat-num" id="total-pct">%0</div><div class="stat-lbl">Tamamlama</div></div>
-    </div>
-    <div style="margin-top:1rem;display:flex;gap:8px;">
-      <button class="btn primary" onclick="saveDay()" style="flex:1">💾 Günü Kaydet</button>
-      <button class="btn" onclick="resetDay()" style="flex:1">🔄 Sıfırla</button>
-    </div>
-  </div>
-
-  <!-- SES ÖLÇER -->
-  <div class="section" id="tab-ses">
-    <div class="card">
-      <div class="card-title">🎤 Sessizlik Ölçer</div>
-      <div class="card-desc">Ders çalışırken ses seviyeni ölçür. Her 5 sessiz dakika (50 dB altında) = 1 ⭐ yıldız!</div>
-
-      <div id="mic-denied" class="alert danger" style="display:none">
-        <span class="alert-icon">🚫</span>
-        <span>Mikrofon izni verilmedi. Tarayıcı adres çubuğundaki kilit simgesinden mikrofona izin ver, sayfayı yenile.</span>
-      </div>
-
-      <div style="text-align:center;margin-bottom:1rem;">
-        <button class="btn primary" id="mic-btn" onclick="toggleMic()" style="padding:10px 28px;font-size:14px;">🎤 Mikrofonu Başlat</button>
-      </div>
-
-      <div id="mic-panel" style="display:none">
-        <div class="db-display ok" id="db-display">-- dB</div>
-        <div class="db-bar-wrap">
-          <div class="db-bar-fill" id="db-bar" style="width:0%;background:var(--accent);"></div>
-        </div>
-        <div class="db-threshold">Eşik: 50 dB · Yeşil = sessiz ✓ · Kırmızı = gürültülü ✗</div>
-
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-          <div style="font-size:13px;font-weight:600;">Bugün kazanılan yıldızlar</div>
-          <div style="font-size:13px;color:var(--text-sec);" id="star-total-label">0 ⭐</div>
-        </div>
-        <div class="star-row" id="star-row"><span style="font-size:13px;color:var(--text-hint);">Henüz yıldız yok — sessiz çalışmaya devam!</span></div>
-
-        <div class="star-countdown" style="margin-top:12px;">
-          <span style="font-size:13px;color:var(--text-sec);" id="star-timer-lbl">Sonraki ⭐ için:</span>
-          <div class="star-progress-wrap"><div class="star-progress-fill" id="star-progress" style="width:0%"></div></div>
-          <span style="font-size:12px;font-weight:600;color:var(--star);" id="star-timer-val">5:00</span>
-        </div>
-
-        <div id="loud-alert" class="alert danger" style="display:none;margin-top:1rem;">
-          <span class="alert-icon">📢</span>
-          <span id="loud-alert-text">Gürültü algılandı! Sessizlik sayacı sıfırlandı.</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">📋 Ayarlar</div>
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
-        <label style="font-size:13px;flex:1;">Gürültü eşiği (dB)</label>
-        <input type="range" id="db-threshold-slider" min="30" max="80" value="50" style="flex:2;" oninput="updateThreshold(this.value)">
-        <span id="db-threshold-val" style="font-size:13px;font-weight:600;width:40px;">50 dB</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:12px;">
-        <label style="font-size:13px;flex:1;">Yıldız için sessiz süre</label>
-        <input type="range" id="star-interval-slider" min="1" max="10" value="5" style="flex:2;" oninput="updateStarInterval(this.value)">
-        <span id="star-interval-val" style="font-size:13px;font-weight:600;width:40px;">5 dk</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- ODAK -->
-  <div class="section" id="tab-odak">
-    <div class="card">
-      <div class="card-title">🚫 Detayda Boğulma Butonu</div>
-      <div class="card-desc">Bir konuya takılıp kaldığında ya da "neden böyle?" diye sormaya başladığında bas.</div>
-      <button class="btn big dalma" onclick="showHint()">Detayda boğuluyorum!</button>
-      <div class="hint-box" id="hint-box"></div>
-    </div>
-    <div class="card">
-      <div class="card-title">🔔 Dalma Uyarısı</div>
-      <div class="card-desc">Pomodoro sırasında her 7 dakikada bir otomatik gelir.</div>
-      <button class="btn big odak" onclick="sendFocusAlert()">Neredeyim? Odaklan!</button>
-    </div>
-    <div class="card">
-      <div class="card-title">📖 Motivasyon</div>
-      <div class="card-desc">Yorulduğunda veya çalışmak istemediğinde bas.</div>
-      <button class="btn big purple" onclick="showMotivation()">Motivasyon lazım!</button>
-      <div class="hint-box" id="motivasyon-box"></div>
-    </div>
-    <div class="stat-row">
-      <div class="stat-card"><div class="stat-num" id="dalma-count">0</div><div class="stat-lbl">Dalma uyarısı</div></div>
-      <div class="stat-card"><div class="stat-num" id="detay-count">0</div><div class="stat-lbl">Detay modu</div></div>
-      <div class="stat-card"><div class="stat-num" id="motivasyon-count">0</div><div class="stat-lbl">Motivasyon</div></div>
-    </div>
-  </div>
-
-  <!-- İSTATİSTİK -->
-  <div class="section" id="tab-istatistik">
-    <div class="card">
-      <div class="week-nav">
-        <button class="btn" onclick="changeWeek(-1)">← Önceki</button>
-        <span id="week-label">Bu Hafta</span>
-        <button class="btn" onclick="changeWeek(1)">Sonraki →</button>
-      </div>
-      <div class="day-bars" id="day-bars"></div>
-    </div>
-    <div class="week-stats" id="week-stats"></div>
-
-    <!-- Ödül Paneli -->
-    <div class="card" id="reward-card" style="margin-top:1rem;display:none">
-      <div class="card-title" style="margin-bottom:4px;">🏆 Bu Haftanın Ödülü</div>
-      <div id="reward-content"></div>
-    </div>
-
-    <div class="card" style="margin-top:1rem">
-      <div class="card-title" style="margin-bottom:1rem">Derse Göre Haftalık Toplam</div>
-      <div class="subject-week" id="subject-week"></div>
-    </div>
-    <div class="card" style="margin-top:1rem">
-      <div class="card-title" style="margin-bottom:.5rem">Günlük Geçmiş</div>
-      <div class="history-list" id="history-list"></div>
-    </div>
-  </div>
-
-  <div class="footer">Duru için özel yapılmıştır 💚 · LGS 2026</div>
 </div>
-<div class="toast" id="toast"></div>
+
+<!-- ÖLÇÜM EKRANI -->
+<div id="screenDers" class="screen">
+  <div class="header">
+    <button class="header-back" onclick="backToSube()">←</button>
+    <span class="header-title">Ses Ölçer</span>
+    <span class="header-sube" id="headerSube">—</span>
+  </div>
+
+  <div class="mic-err" id="micErr">⚠️ Mikrofon izni gerekli. Lütfen tarayıcı izinlerini kontrol edin.</div>
+
+  <div class="top-row">
+    <div class="meter-box">
+      <div class="db-big" id="dbBig">—</div>
+      <div class="db-unit">desibel</div>
+      <div class="status-pill" id="statusPill">bekliyor</div>
+    </div>
+    <div class="info-grid">
+      <div class="info-card"><div class="lbl">sessiz süre</div><div class="val" id="quietTime">0:00</div></div>
+      <div class="info-card"><div class="lbl">geçen süre</div><div class="val" id="elapsedTime">0:00</div></div>
+      <div class="info-card"><div class="lbl">ort. dB</div><div class="val" id="avgDb">—</div></div>
+      <div class="info-card"><div class="lbl">sonraki ★</div><div class="val" id="nextStar">5:00</div></div>
+    </div>
+  </div>
+
+  <div class="threshold-card">
+    <div class="lbl">SESLİZLİK EŞİĞİ</div>
+    <div class="thresh-row">
+      <input type="range" id="thresh" min="20" max="70" value="50" step="1" oninput="onThresh(this)">
+      <span class="thresh-val" id="threshVal">50 dB</span>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-start" id="startBtn" onclick="startSession()">▶ Başlat</button>
+    <button class="btn btn-pause" id="pauseBtn" onclick="togglePause()" disabled>⏸ Duraklat</button>
+    <button class="btn btn-reset" onclick="resetSession()">↺ Sıfırla</button>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-header">
+      <span>40 DAKİKA dB AKIŞI</span>
+      <span class="live-dot" id="liveTag">● canlı</span>
+    </div>
+    <canvas id="histCanvas" style="height:160px;"></canvas>
+  </div>
+
+  <div class="stars-card">
+    <div class="lbl">KAZANILAN YILDIZLAR — her 5 dk sessizlik için 1 ★ (maks. 8)</div>
+    <div class="stars-row" id="starsRow"></div>
+  </div>
+
+  <div class="celebrate" id="celebrate">
+    <div class="emoji">🎉</div>
+    <h2 id="celebTitle"></h2>
+    <p id="celebMsg"></p>
+    <div class="celebrate-btns">
+      <button class="btn btn-reset" onclick="resetSession()">↺ Yeni ders</button>
+      <button class="btn btn-start" onclick="goComp()">📊 Karşılaştır</button>
+    </div>
+  </div>
+</div>
+
+<!-- KARŞILAŞTIRMA EKRANI -->
+<div id="screenComp" class="screen">
+  <div class="comp-header">
+    <button class="header-back" onclick="backToSube()">←</button>
+    <span class="comp-title">Şube Karşılaştırması</span>
+  </div>
+
+  <div class="nav-tabs">
+    <button class="nav-tab active" id="tabSon" onclick="switchTab('son')">Son Dersler</button>
+    <button class="nav-tab" id="tabOrtalama" onclick="switchTab('ort')">Genel Ortalama</button>
+  </div>
+
+  <div id="tabSonContent">
+    <div class="comp-card">
+      <div class="lbl">SON DERS YILDIZLARI — ŞUBEYE GÖRE</div>
+      <div class="chart-wrap-comp"><canvas id="compCanvas"></canvas></div>
+    </div>
+    <div class="comp-card">
+      <div class="lbl">TÜM ÖLÇÜMLER GEÇMİŞİ</div>
+      <div class="history-list" id="historyList"></div>
+    </div>
+  </div>
+
+  <div id="tabOrtalamaContent" style="display:none;">
+    <div class="comp-card">
+      <div class="lbl">ŞUBE BAŞINA ORTALAMA YILDIZ</div>
+      <div class="chart-wrap-comp"><canvas id="avgCanvas"></canvas></div>
+    </div>
+    <div class="comp-card">
+      <div class="lbl">SIRALAMA</div>
+      <div class="history-list" id="rankList"></div>
+    </div>
+  </div>
+
+  <button class="clear-btn" onclick="clearData()">🗑 Tüm verileri sil</button>
+</div>
+
+</div><!-- /wrap -->
 
 <script>
-// ── Sabitler ──────────────────────────────────────────
-const SUBJECTS=[
-  {name:'Matematik',color:'#5DCAA5'},{name:'Türkçe',color:'#7F77DD'},
-  {name:'Fen',color:'#EF9F27'},{name:'İngilizce',color:'#1D9E75'},
-  {name:'Sosyal',color:'#D4537E'},{name:'Din',color:'#378ADD'},
-];
-const TARGET=20, WORK_MIN=30, BREAK_MIN=10, ALERT_MIN=7;
-const DAYS_TR=['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'];
-const hints=[
-  '📌 Bu detay lisede anlatılacak — şimdilik kuralı uygula ve devam et!',
-  '📝 Soru defterine yaz, sonra bak. Şimdi ilerle!',
-  '⏩ Milli Eğitim müfredatı böyle istiyor. Sonraki soruya geç!',
-  '💡 Çok iyi sorguluyorsun — ama şimdi zaman değil. Devam!',
-  '🎯 Bu konuyu yıldızla işaretle, tekrar dönersin. Şimdi odaklan!',
-];
-const motivasyonlar=[
-  '🌟 Her çözdüğün soru seni LGS\'ye bir adım yaklaştırıyor!',
-  '💪 Zor günler de geçer. Sadece bir soru çöz, sonra bakarsın.',
-  '🎯 Hedefin var, yolun var. Bugün biraz daha ileri git!',
-  '📚 Gelecekteki Duru sana teşekkür edecek. Hadi!',
-  '🌱 Küçük adımlar büyük başarı getirir. Tek soru bile sayılır!',
-];
+// ── STATE ──────────────────────────────────────────────────
+const TOTAL_SEC = 40*60, STAR_INTERVAL = 5*60, MAX_STARS = 8, HIST_POINTS = 480;
+const STORAGE_KEY = 'sinif_ses_v1';
 
-// ── State ─────────────────────────────────────────────
-let subjects=SUBJECTS.map(s=>({...s,done:0,target:TARGET}));
-let timerInterval=null,alertInterval=null;
-let timeLeft=WORK_MIN*60,totalTime=WORK_MIN*60;
-let running=false,isBreak=false,pomosDone=0;
-let dalmaCount=0,detayCount=0,motivasyonCount=0;
-let weekOffset=0;
+let selectedSinif = '', selectedSube = '', currentSube = '';
+let audioCtx, analyser, source, stream;
+let running=false, paused=false;
+let elapsedSec=0, quietSec=0, quietStreak=0;
+let dbHistory=[], dbBuffer=[], bufferSec=0;
+let timerInt=null, animId=null;
+let threshold=50, dbSum=0, dbCount=0, stars=0;
 
-// Ses ölçer state
-let audioCtx=null,analyser=null,micStream=null,rafId=null;
-let micActive=false,micPaused=false;
-let dbThreshold=50;
-let starIntervalMin=5;
-let starSecondsLeft=starIntervalMin*60;
-let starInterval=null;
-let todayStars=0;
-let loudTimeout=null;
-let quietSeconds=0; // toplam sessiz kalınan saniye (bugün)
-let quietTimer=null;
-
-// ── Storage ───────────────────────────────────────────
-const STORE_KEY='duru_lgs_v3';
-function loadData(){try{return JSON.parse(localStorage.getItem(STORE_KEY))||{};}catch{return {};}}
-function saveData(d){try{localStorage.setItem(STORE_KEY,JSON.stringify(d));}catch{}}
-function pad2(n){return String(n).padStart(2,'0');}
-function todayKey(){const d=new Date();return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());}
-
-function loadToday(){
-  const data=loadData(),key=todayKey();
-  if(data[key]){
-    const s=data[key];
-    subjects.forEach((sub,i)=>{sub.done=s.subjects[i]||0;});
-    pomosDone=s.pomos||0; todayStars=s.stars||0; quietSeconds=s.quietSec||0;
-    updateDots();
+// ── STORAGE ────────────────────────────────────────────────
+function loadData() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch(e){ return []; }
+}
+function saveRecord(sube, starCount, avgDb) {
+  const data = loadData();
+  data.push({ sube, stars: starCount, avgDb, date: new Date().toLocaleDateString('tr-TR'), ts: Date.now() });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+function clearData() {
+  if(confirm('Tüm ölçüm geçmişi silinecek. Emin misin?')) {
+    localStorage.removeItem(STORAGE_KEY);
+    renderComp();
   }
 }
-function autoSaveToday(){
-  const data=loadData(),key=todayKey();
-  data[key]={
-    date:key,subjects:subjects.map(s=>s.done),
-    pomos:pomosDone,total:subjects.reduce((a,s)=>a+s.done,0),
-    stars:todayStars, quietSec:quietSeconds,
-  };
-  saveData(data);
-}
 
-// ── Tab ───────────────────────────────────────────────
-function showTab(name,el){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  document.getElementById('tab-'+name).classList.add('active');
-  if(el)el.classList.add('active');
-  if(name==='istatistik')renderStats();
+// ── NAVİGASYON ──────────────────────────────────────────────
+function showScreen(id) {
+  ['screenSube','screenDers','screenComp'].forEach(s => {
+    document.getElementById(s).classList.remove('active');
+  });
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
 }
-
-// ── Toast ─────────────────────────────────────────────
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),3500);
+function backToSube() { stopSession(); showScreen('screenSube'); }
+function goDers() {
+  if(!selectedSinif || !selectedSube) return;
+  currentSube = selectedSinif + '/' + selectedSube;
+  document.getElementById('headerSube').textContent = currentSube + ' Şubesi';
+  resetSession();
+  showScreen('screenDers');
 }
+function goComp() { renderComp(); showScreen('screenComp'); }
 
-// ── Timer ─────────────────────────────────────────────
-function pad(n){return String(n).padStart(2,'0');}
-function setMode(mode){
-  clearInterval(timerInterval);clearInterval(alertInterval);
-  running=false;
-  document.getElementById('start-btn').textContent='▶ Başlat';
-  document.getElementById('mode-work').classList.toggle('active',mode==='work');
-  document.getElementById('mode-break').classList.toggle('active',mode==='break');
-  if(mode==='work'){
-    isBreak=false;timeLeft=WORK_MIN*60;totalTime=WORK_MIN*60;
-    document.getElementById('timer-sub').textContent='Çalışma süresi · 4 tur hedefi';
-  }else{
-    isBreak=true;timeLeft=BREAK_MIN*60;totalTime=BREAK_MIN*60;
-    document.getElementById('timer-sub').textContent='Mola · Dinlen!';
-    // Molaya geçince sesi duraklat
-    if(micActive&&!micPaused) pauseMic();
+// ── ŞUBE SEÇİM ─────────────────────────────────────────────
+function secSube(el, sube) {
+  selectedSube = sube;
+  document.querySelectorAll('.sube-btn').forEach(b => b.classList.remove('sel'));
+  el.classList.add('sel');
+  updateSecim();
+}
+document.getElementById('sinifSel').addEventListener('change', function(){ selectedSinif = this.value; updateSecim(); });
+function updateSecim() {
+  selectedSinif = document.getElementById('sinifSel').value;
+  const lbl = document.getElementById('secimLabel');
+  const btn = document.getElementById('btnBasla');
+  if(selectedSinif && selectedSube) {
+    lbl.textContent = '✓ ' + selectedSinif + '. Sınıf ' + selectedSube + ' Şubesi seçildi';
+    btn.disabled = false;
+  } else {
+    lbl.textContent = selectedSinif ? 'Şube seçin' : selectedSube ? 'Sınıf seçin' : 'Sınıf ve şube seçin';
+    btn.disabled = true;
   }
-  updateTimerDisplay();
 }
-function updateTimerDisplay(){
-  document.getElementById('timer-display').textContent=pad(Math.floor(timeLeft/60))+':'+pad(timeLeft%60);
-  document.getElementById('timer-progress').style.width=(timeLeft/totalTime*100)+'%';
+
+// ── YILDIZ SLOTLARI ────────────────────────────────────────
+const starsRow = document.getElementById('starsRow');
+for(let i=0;i<MAX_STARS;i++){
+  const s=document.createElement('div'); s.className='star-slot'; s.id='star-'+i; s.textContent='★'; starsRow.appendChild(s);
+}
+
+// ── RENK ───────────────────────────────────────────────────
+function getColor(db){ return db<=threshold?'#1D9E75':db<=threshold+10?'#EF9F27':'#E24B4A'; }
+function fmt(s){ return Math.floor(s/60)+':'+(s%60).toString().padStart(2,'0'); }
+
+// ── 40 DK GRAFİĞİ ──────────────────────────────────────────
+const histCanvas=document.getElementById('histCanvas'), hCtx=histCanvas.getContext('2d');
+function drawHist(){
+  const dpr=window.devicePixelRatio||1, W=histCanvas.offsetWidth*dpr, H=histCanvas.offsetHeight*dpr;
+  histCanvas.width=W; histCanvas.height=H; hCtx.clearRect(0,0,W,H);
+  const MIN=20,MAX=90;
+  hCtx.strokeStyle='rgba(0,0,0,0.06)'; hCtx.lineWidth=1;
+  [30,45,60,75].forEach(db=>{
+    const y=H-((db-MIN)/(MAX-MIN))*H;
+    hCtx.beginPath(); hCtx.moveTo(0,y); hCtx.lineTo(W,y); hCtx.stroke();
+    hCtx.fillStyle='rgba(0,0,0,0.3)'; hCtx.font=(9*dpr)+'px sans-serif';
+    hCtx.fillText(db+'dB',2*dpr,y-2*dpr);
+  });
+  const ty=H-((threshold-MIN)/(MAX-MIN))*H;
+  hCtx.setLineDash([5*dpr,4*dpr]); hCtx.strokeStyle='rgba(239,159,39,0.8)'; hCtx.lineWidth=2*dpr;
+  hCtx.beginPath(); hCtx.moveTo(0,ty); hCtx.lineTo(W,ty); hCtx.stroke(); hCtx.setLineDash([]);
+  const barW=W/HIST_POINTS;
+  let streak=0;
+  dbHistory.forEach((v,i)=>{
+    if(v<=threshold){ streak+=5; } else { streak=0; }
+    if(streak>0&&streak%STAR_INTERVAL===0){
+      const x=i*barW;
+      hCtx.strokeStyle='rgba(239,159,39,0.5)'; hCtx.lineWidth=2*dpr;
+      hCtx.beginPath(); hCtx.moveTo(x,0); hCtx.lineTo(x,H); hCtx.stroke();
+      hCtx.fillStyle='rgba(239,159,39,1)'; hCtx.font=(13*dpr)+'px sans-serif';
+      hCtx.fillText('★',x-7*dpr,14*dpr);
+    }
+  });
+  dbHistory.forEach((v,i)=>{
+    const c=Math.max(MIN,Math.min(MAX,v)), bH=((c-MIN)/(MAX-MIN))*H;
+    hCtx.fillStyle=getColor(v); hCtx.globalAlpha=0.9;
+    hCtx.fillRect(i*barW,H-bH,Math.max(1,barW-0.5),bH);
+  });
+  hCtx.globalAlpha=1;
+  if(dbHistory.length>0&&dbHistory.length<HIST_POINTS){
+    const cx=dbHistory.length*barW;
+    hCtx.strokeStyle='rgba(0,0,0,0.2)'; hCtx.lineWidth=1.5*dpr; hCtx.setLineDash([]);
+    hCtx.beginPath(); hCtx.moveTo(cx,0); hCtx.lineTo(cx,H); hCtx.stroke();
+  }
+  hCtx.fillStyle='rgba(0,0,0,0.35)'; hCtx.font=(9*dpr)+'px sans-serif';
+  [10,20,30,40].forEach(m=>{ const x=(m*60/5)*barW; hCtx.fillText(m+'dk',x,H-2*dpr); });
+}
+
+// ── MİKROFON ───────────────────────────────────────────────
+function getCurrentDb(){
+  if(!analyser) return 20;
+  const d=new Uint8Array(analyser.frequencyBinCount);
+  analyser.getByteFrequencyData(d);
+  const rms=Math.sqrt(d.reduce((s,v)=>s+v*v,0)/d.length);
+  return rms>0?Math.round(20*Math.log10(rms/255)*-1+20):20;
+}
+function measureLoop(){
+  if(!running) return;
+  if(!paused){
+    const db=Math.max(20,Math.min(90,getCurrentDb()));
+    document.getElementById('dbBig').textContent=db;
+    document.getElementById('dbBig').style.color=getColor(db);
+    const sp=document.getElementById('statusPill');
+    if(db<=threshold){ sp.style.background='#E1F5EE'; sp.style.color='#0F6E56'; sp.textContent='✓ sessiz'; }
+    else { sp.style.background='#FCEBEB'; sp.style.color='#A32D2D'; sp.textContent='✗ gürültülü'; }
+  }
+  animId=requestAnimationFrame(measureLoop);
 }
 function tick(){
-  if(timeLeft<=0){
-    clearInterval(timerInterval);clearInterval(alertInterval);
-    running=false;document.getElementById('start-btn').textContent='▶ Başlat';
-    if(!isBreak){
-      pomosDone=Math.min(4,pomosDone+1);updateDots();autoSaveToday();
-      document.getElementById('break-alert').style.display='flex';
-      setTimeout(()=>document.getElementById('break-alert').style.display='none',6000);
-      showToast('🎉 30 dakika tamamlandı! Mola zamanı.');
-      setMode('break');
-    }else{showToast('📚 Mola bitti! Çalışmaya devam.');setMode('work');}
-    return;
+  if(!running||paused) return;
+  const db=Math.max(20,Math.min(90,getCurrentDb()));
+  elapsedSec++;
+  if(db<=threshold){ quietSec++; quietStreak++; } else { quietStreak=0; }
+  if(quietStreak>0&&quietStreak%STAR_INTERVAL===0&&stars<MAX_STARS){
+    stars++;
+    const sl=document.getElementById('star-'+(stars-1));
+    if(sl) sl.className='star-slot earned';
   }
-  timeLeft--;updateTimerDisplay();
-}
-function startAlertInterval(){
-  alertInterval=setInterval(()=>{
-    dalmaCount++;
-    document.getElementById('dalma-count').textContent=dalmaCount;
-    document.getElementById('focus-alert').style.display='flex';
-    showToast('🔔 Duru, neredesin? Odaklan!');
-    setTimeout(()=>document.getElementById('focus-alert').style.display='none',5000);
-  },ALERT_MIN*60*1000);
-}
-function toggleTimer(){
-  if(running){
-    clearInterval(timerInterval);clearInterval(alertInterval);
-    running=false;document.getElementById('start-btn').textContent='▶ Devam';
-    // Ders durunca sesi de duraklat
-    if(micActive&&!micPaused) pauseMic();
-  }else{
-    timerInterval=setInterval(tick,1000);startAlertInterval();
-    running=true;document.getElementById('start-btn').textContent='⏸ Durdur';
-    // Ders başlayınca otomatik mikrofon aç
-    if(!isBreak) startMicAuto();
+  dbSum+=db; dbCount++; bufferSec++; dbBuffer.push(db);
+  if(bufferSec>=5){
+    dbHistory.push(Math.round(dbBuffer.reduce((a,b)=>a+b,0)/dbBuffer.length));
+    dbBuffer=[]; bufferSec=0; drawHist();
   }
-}
-async function startMicAuto(){
-  if(micActive){
-    if(micPaused) resumeMic();
-    return;
-  }
-  try{
-    const stream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
-    micStream=stream;
-    audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-    analyser=audioCtx.createAnalyser();
-    analyser.fftSize=2048;
-    const src=audioCtx.createMediaStreamSource(stream);
-    src.connect(analyser);
-    micActive=true; micPaused=false;
-    document.getElementById('mic-btn').textContent='⏹ Durdur';
-    document.getElementById('mic-panel').style.display='block';
-    document.getElementById('mic-denied').style.display='none';
-    document.getElementById('mic-status-row').style.display='flex';
-    document.getElementById('live-sound-panel').style.display='block';
-    document.getElementById('pomo-info-card').style.display='none';
-    starSecondsLeft=starIntervalMin*60;
-    startStarTimer(); startQuietTimer(); drawDb();
-    showToast('🎤 Ses ölçer otomatik başlatıldı');
-  }catch(e){
-    document.getElementById('mic-denied').style.display='flex';
-  }
-}
-function resetTimer(){setMode(isBreak?'break':'work');}
-function updateDots(){document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('done',i<pomosDone));}
-
-// ── Görevler ──────────────────────────────────────────
-function renderSubjects(){
-  const grid=document.getElementById('subject-grid');
-  grid.innerHTML='';let totalDone=0;
-  subjects.forEach((s,i)=>{
-    totalDone+=s.done;
-    const pct=Math.min(100,Math.round(s.done/s.target*100));
-    const isDone=s.done>=s.target;
-    const card=document.createElement('div');
-    card.className='subject-card';
-    card.innerHTML=`
-      <div class="subject-header">
-        <span class="subject-name">${s.name}</span>
-        <span class="subject-badge ${isDone?'done':''}">${isDone?'✓ Tamam':s.done+'/'+s.target}</span>
-      </div>
-      <div class="subject-pct">${pct}% tamamlandı</div>
-      <div class="mini-bar"><div class="mini-fill" style="width:${pct}%;background:${s.color}"></div></div>
-      <div class="q-btns">
-        <button onclick="addQ(${i},-5)">-5</button>
-        <button onclick="addQ(${i},-1)">-1</button>
-        <button class="plus" onclick="addQ(${i},1)">+1</button>
-        <button class="plus" onclick="addQ(${i},5)">+5</button>
-      </div>`;
-    grid.appendChild(card);
-  });
-  document.getElementById('total-done').textContent=totalDone;
-  document.getElementById('total-pct').textContent='%'+Math.round(totalDone/(TARGET*SUBJECTS.length)*100);
-  autoSaveToday();
-}
-function addQ(i,n){
-  subjects[i].done=Math.max(0,subjects[i].done+n);
-  if(subjects[i].done>=subjects[i].target)showToast('🎉 '+subjects[i].name+' hedefine ulaştın!');
-  renderSubjects();
-}
-function saveDay(){autoSaveToday();showToast('💾 Bugünün çalışması kaydedildi!');}
-function resetDay(){
-  if(!confirm('Günü sıfırlamak istediğinden emin misin?'))return;
-  subjects.forEach(s=>s.done=0);pomosDone=0;updateDots();renderSubjects();
-  showToast('🔄 Yeni gün başladı! Hadi başla!');
+  document.getElementById('quietTime').textContent=fmt(quietSec);
+  document.getElementById('elapsedTime').textContent=fmt(elapsedSec);
+  document.getElementById('avgDb').textContent=dbCount>0?Math.round(dbSum/dbCount)+' dB':'—';
+  const toNext=STAR_INTERVAL-(quietStreak%STAR_INTERVAL);
+  document.getElementById('nextStar').textContent=stars>=MAX_STARS?'✓ tam':fmt(toNext);
+  if(elapsedSec>=TOTAL_SEC){ stopSession(); saveRecord(currentSube,stars,dbCount>0?Math.round(dbSum/dbCount):0); showCelebration(); }
 }
 
-// ── Ses Ölçer ─────────────────────────────────────────
-function updateThreshold(v){
-  dbThreshold=+v;
-  document.getElementById('db-threshold-val').textContent=v+' dB';
+async function startSession(){
+  document.getElementById('micErr').style.display='none';
+  try {
+    stream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
+    audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    analyser=audioCtx.createAnalyser(); analyser.fftSize=1024;
+    source=audioCtx.createMediaStreamSource(stream); source.connect(analyser);
+    running=true; paused=false;
+    document.getElementById('startBtn').disabled=true;
+    document.getElementById('pauseBtn').disabled=false;
+    document.getElementById('liveTag').style.display='block';
+    document.getElementById('celebrate').classList.remove('show');
+    animId=requestAnimationFrame(measureLoop);
+    timerInt=setInterval(tick,1000);
+  } catch(e){ document.getElementById('micErr').style.display='block'; }
 }
-function updateStarInterval(v){
-  starIntervalMin=+v;
-  document.getElementById('star-interval-val').textContent=v+' dk';
-  starSecondsLeft=starIntervalMin*60;
-  updateStarCountdown();
+function togglePause(){
+  if(!running) return; paused=!paused;
+  const btn=document.getElementById('pauseBtn');
+  const lt=document.getElementById('liveTag');
+  const sp=document.getElementById('statusPill');
+  if(paused){ btn.textContent='▶ Devam'; sp.textContent='duraklatıldı'; sp.style.background='#F7F7F5'; sp.style.color='#888'; lt.style.display='none'; }
+  else { btn.textContent='⏸ Duraklat'; lt.style.display='block'; }
 }
-
-async function toggleMic(){
-  if(micActive){stopMic();return;}
-  try{
-    const stream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
-    micStream=stream;
-    audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-    analyser=audioCtx.createAnalyser();
-    analyser.fftSize=2048;
-    const src=audioCtx.createMediaStreamSource(stream);
-    src.connect(analyser);
-    micActive=true; micPaused=false;
-    document.getElementById('mic-btn').textContent='⏹ Durdur';
-    document.getElementById('mic-panel').style.display='block';
-    document.getElementById('mic-denied').style.display='none';
-    document.getElementById('mic-status-row').style.display='flex';
-    starSecondsLeft=starIntervalMin*60;
-    startStarTimer(); drawDb();
-  }catch(e){
-    document.getElementById('mic-denied').style.display='flex';
-    console.error(e);
-  }
+function stopSession(){
+  running=false;
+  if(animId) cancelAnimationFrame(animId);
+  if(timerInt) clearInterval(timerInt);
+  if(stream) stream.getTracks().forEach(t=>t.stop());
+  if(audioCtx) audioCtx.close();
+  document.getElementById('startBtn').disabled=false;
+  document.getElementById('pauseBtn').disabled=true;
+  document.getElementById('liveTag').style.display='none';
+  const sp=document.getElementById('statusPill');
+  sp.textContent='bitti'; sp.style.background='#F7F7F5'; sp.style.color='#888';
 }
-function stopMic(){
-  micActive=false; micPaused=false;
-  if(micStream)micStream.getTracks().forEach(t=>t.stop());
-  if(audioCtx)audioCtx.close();
-  if(rafId)cancelAnimationFrame(rafId);
-  clearInterval(starInterval); clearInterval(quietTimer);
-  document.getElementById('mic-btn').textContent='🎤 Mikrofonu Başlat';
-  document.getElementById('mic-panel').style.display='none';
-  document.getElementById('mic-status-row').style.display='none';
-  document.getElementById('live-sound-panel').style.display='none';
-  document.getElementById('pomo-info-card').style.display='block';
+function resetSession(){
+  stopSession();
+  elapsedSec=0; quietSec=0; quietStreak=0; dbSum=0; dbCount=0; stars=0;
+  dbHistory=[]; dbBuffer=[]; bufferSec=0;
+  document.getElementById('dbBig').textContent='—'; document.getElementById('dbBig').style.color='';
+  document.getElementById('quietTime').textContent='0:00';
+  document.getElementById('elapsedTime').textContent='0:00';
+  document.getElementById('avgDb').textContent='—';
+  document.getElementById('nextStar').textContent='5:00';
+  const sp=document.getElementById('statusPill');
+  sp.textContent='bekliyor'; sp.style.background='#F7F7F5'; sp.style.color='#888';
+  for(let i=0;i<MAX_STARS;i++){ const s=document.getElementById('star-'+i); if(s) s.className='star-slot'; }
+  document.getElementById('celebrate').classList.remove('show');
+  document.getElementById('pauseBtn').textContent='⏸ Duraklat';
+  hCtx.clearRect(0,0,histCanvas.width,histCanvas.height); drawHist();
 }
-function pauseMic(){
-  if(!micActive||micPaused)return;
-  micPaused=true;
-  if(rafId)cancelAnimationFrame(rafId);
-  clearInterval(starInterval); clearInterval(quietTimer);
-  // canlı panel → sarı
-  document.getElementById('live-dot').style.background='var(--amber)';
-  document.getElementById('live-dot').style.animation='none';
-  document.getElementById('live-pause-btn').textContent='▶ Devam Et';
-  // timer kartı
-  document.getElementById('mic-pause-btn').textContent='▶ Devam Et';
-  document.getElementById('mic-status-lbl').textContent='Ses ölçer duraklatıldı';
-  document.getElementById('mic-status-dot').style.background='var(--amber)';
-  document.getElementById('mic-status-dot').style.animation='none';
-  showToast('⏸ Ses ölçer duraklatıldı');
-}
-function resumeMic(){
-  if(!micActive||!micPaused)return;
-  micPaused=false;
-  document.getElementById('live-dot').style.background='var(--accent)';
-  document.getElementById('live-dot').style.animation='pulse 1.5s infinite';
-  document.getElementById('live-pause-btn').textContent='⏸ Durdur';
-  document.getElementById('mic-pause-btn').textContent='⏸ Geçici Durdur';
-  document.getElementById('mic-status-lbl').textContent='Ses ölçer aktif';
-  document.getElementById('mic-status-dot').style.background='var(--accent)';
-  document.getElementById('mic-status-dot').style.animation='pulse 1.5s infinite';
-  startStarTimer(); startQuietTimer(); drawDb();
-  showToast('▶ Ses ölçer devam ediyor');
-}
-function toggleMicPause(){
-  if(micPaused) resumeMic(); else pauseMic();
-}
-
-function getDb(){
-  const buf=new Uint8Array(analyser.frequencyBinCount);
-  analyser.getByteTimeDomainData(buf);
-  let sum=0;
-  for(let i=0;i<buf.length;i++){const v=(buf[i]-128)/128;sum+=v*v;}
-  const rms=Math.sqrt(sum/buf.length);
-  if(rms<0.0001)return 0;
-  return Math.max(0,Math.min(120,20*Math.log10(rms)+90));
-}
-
-let currentDb=0;
-let consecutiveLoud=0;
-function drawDb(){
-  if(!micActive||micPaused)return;
-  currentDb=getDb();
-  const pct=Math.min(100,currentDb/120*100);
-  const isLoud=currentDb>dbThreshold;
-  // Ses sekmesi
-  const display=document.getElementById('db-display');
-  const bar=document.getElementById('db-bar');
-  if(display){display.textContent=Math.round(currentDb)+' dB'; display.className='db-display '+(isLoud?'loud':'ok');}
-  if(bar){bar.style.width=pct+'%'; bar.style.background=isLoud?'var(--red)':'var(--accent)';}
-  // Canlı panel
-  const liveBar=document.getElementById('live-db-bar');
-  const liveVal=document.getElementById('live-db-val');
-  if(liveBar){liveBar.style.width=pct+'%'; liveBar.style.background=isLoud?'var(--red)':'var(--accent)';}
-  if(liveVal){liveVal.textContent=Math.round(currentDb)+' dB'; liveVal.style.color=isLoud?'var(--red)':'var(--accent-dark)';}
-  if(isLoud) onLoud(currentDb); else consecutiveLoud=0;
-  rafId=requestAnimationFrame(drawDb);
-}
-
-function onLoud(db){
-  consecutiveLoud++;
-  if(consecutiveLoud===10){
-    starSecondsLeft=starIntervalMin*60;
-    updateStarCountdown();
-    // Ses sekmesi uyarı
-    const loudEl=document.getElementById('loud-alert');
-    if(loudEl){loudEl.style.display='flex'; document.getElementById('loud-alert-text').textContent='📢 Gürültü algılandı ('+Math.round(db)+' dB)! Sayaç sıfırlandı.';}
-    // Canlı panel uyarı
-    const liveLoud=document.getElementById('live-loud-alert');
-    if(liveLoud){liveLoud.style.display='flex'; document.getElementById('live-loud-text').textContent='📢 Gürültü! ('+Math.round(db)+' dB) Sayaç sıfırlandı.';}
-    clearTimeout(loudTimeout);
-    loudTimeout=setTimeout(()=>{
-      if(loudEl)loudEl.style.display='none';
-      if(liveLoud)liveLoud.style.display='none';
-    },4000);
-  }
-}
-
-// Sessizlik süresi sayacı
-function startQuietTimer(){
-  clearInterval(quietTimer);
-  quietTimer=setInterval(()=>{
-    if(!micActive||micPaused)return;
-    if(currentDb<=dbThreshold){
-      quietSeconds++;
-      autoSaveToday();
-    }
-    updateLiveQuietTime();
-  },1000);
-}
-function updateLiveQuietTime(){
-  const el=document.getElementById('live-quiet-time');
-  if(!el)return;
-  const m=Math.floor(quietSeconds/60), s=quietSeconds%60;
-  el.textContent=pad(m)+':'+pad(s);
-}
-
-function startStarTimer(){
-  clearInterval(starInterval);
-  starInterval=setInterval(()=>{
-    if(!micActive||micPaused)return;
-    starSecondsLeft--;
-    updateStarCountdown();
-    if(starSecondsLeft<=0){
-      earnStar();
-      starSecondsLeft=starIntervalMin*60;
-      consecutiveLoud=0;
-    }
-  },1000);
-}
-
-function updateStarCountdown(){
-  const m=Math.floor(starSecondsLeft/60), s=starSecondsLeft%60;
-  const pct=((starIntervalMin*60-starSecondsLeft)/(starIntervalMin*60))*100;
-  // Ses sekmesi
-  const tv=document.getElementById('star-timer-val');
-  const sp=document.getElementById('star-progress');
-  if(tv)tv.textContent=pad(m)+':'+pad(s);
-  if(sp)sp.style.width=pct+'%';
-  // Canlı panel
-  const lsc=document.getElementById('live-star-countdown');
-  const lsb=document.getElementById('live-star-bar');
-  if(lsc)lsc.textContent=pad(m)+':'+pad(s);
-  if(lsb)lsb.style.width=pct+'%';
-}
-
-function earnStar(){
-  todayStars++;
-  autoSaveToday();
-  showToast('⭐ Yıldız kazandın! Toplam: '+todayStars);
-  // Ses sekmesi
-  const row=document.getElementById('star-row');
-  if(row){if(row.querySelector('span[style]'))row.innerHTML=''; const s=document.createElement('span'); s.className='star'; s.textContent='⭐'; row.appendChild(s);}
-  const stl=document.getElementById('star-total-label');
-  if(stl)stl.textContent=todayStars+' ⭐';
-  // Canlı panel
-  const liveRow=document.getElementById('live-star-row');
-  if(liveRow){if(liveRow.querySelector('span[style]'))liveRow.innerHTML=''; const s2=document.createElement('span'); s2.className='star'; s2.textContent='⭐'; liveRow.appendChild(s2);}
-  const lsc2=document.getElementById('live-star-count');
-  if(lsc2)lsc2.textContent=todayStars+' ⭐';
-}
-
-// ── Odak ─────────────────────────────────────────────
-function showHint(){
-  detayCount++;document.getElementById('detay-count').textContent=detayCount;
-  const box=document.getElementById('hint-box');
-  box.textContent=hints[Math.floor(Math.random()*hints.length)];
-  box.classList.add('show');
-}
-function sendFocusAlert(){
-  dalmaCount++;document.getElementById('dalma-count').textContent=dalmaCount;
-  showToast('🔔 Neredeyim? Odaklan!');
-  document.getElementById('focus-alert').style.display='flex';
-  setTimeout(()=>document.getElementById('focus-alert').style.display='none',5000);
-}
-function showMotivation(){
-  motivasyonCount++;document.getElementById('motivasyon-count').textContent=motivasyonCount;
-  const box=document.getElementById('motivasyon-box');
-  box.textContent=motivasyonlar[Math.floor(Math.random()*motivasyonlar.length)];
-  box.classList.add('show');
-}
-
-// ── İstatistik ────────────────────────────────────────
-function changeWeek(dir){weekOffset+=dir;renderStats();}
-function getWeekDays(offset){
-  const today=new Date(),dayOfWeek=today.getDay();
-  const monday=new Date(today);
-  monday.setDate(today.getDate()-((dayOfWeek+6)%7)+offset*7);
-  return Array.from({length:7},(_,i)=>{
-    const d=new Date(monday);d.setDate(monday.getDate()+i);
-    const key=d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());
-    return{key,label:DAYS_TR[d.getDay()],date:d};
-  });
-}
-function renderStats(){
-  const data=loadData(),days=getWeekDays(weekOffset),todayK=todayKey();
-  const start=days[0].date,end=days[6].date;
-  const fmt=d=>pad2(d.getDate())+'/'+pad2(d.getMonth()+1);
-  document.getElementById('week-label').textContent=
-    weekOffset===0?'Bu Hafta ('+fmt(start)+' – '+fmt(end)+')':
-    weekOffset===-1?'Geçen Hafta ('+fmt(start)+' – '+fmt(end)+')':
-    fmt(start)+' – '+fmt(end);
-
-  const dailyTotals=days.map(d=>data[d.key]?data[d.key].total:0);
-  const dailyStars=days.map(d=>data[d.key]?data[d.key].stars||0:0);
-  const maxVal=Math.max(...dailyTotals,10);
-  const weekTotal=dailyTotals.reduce((a,b)=>a+b,0);
-  const activeDays=dailyTotals.filter(v=>v>0).length;
-  const avgPerDay=activeDays>0?Math.round(weekTotal/activeDays):0;
-  const weekPomos=days.reduce((a,d)=>a+(data[d.key]?.pomos||0),0);
-  const weekStars=dailyStars.reduce((a,b)=>a+b,0);
-
-  // Bar chart
-  const barsEl=document.getElementById('day-bars');
-  barsEl.innerHTML='';
-  days.forEach((d,i)=>{
-    const val=dailyTotals[i],stars=dailyStars[i],isToday=d.key===todayK;
-    const pct=Math.round((val/maxVal)*100);
-    const col=document.createElement('div');
-    col.style.cssText='flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;height:100%;justify-content:flex-end;';
-    col.innerHTML=`
-      <div style="font-size:10px;color:var(--text-sec);font-weight:500;">${val>0?val:''}</div>
-      <div style="width:100%;display:flex;align-items:flex-end;height:90px;">
-        <div style="width:100%;height:${Math.max(4,pct)}%;border-radius:6px 6px 0 0;background:${val===0?'var(--bg-sec)':isToday?'var(--accent-dark)':'var(--accent)'};transition:height .4s;"></div>
-      </div>
-      <div style="font-size:10px;color:var(--text-hint);">${d.label}</div>
-      <div style="font-size:10px;">${stars>0?'⭐'.repeat(Math.min(stars,5))+(stars>5?'+':''):''}</div>`;
-    barsEl.appendChild(col);
-  });
-
-  // Hafta özeti
-  document.getElementById('week-stats').innerHTML=`
-    <div class="week-stat"><div class="num">${weekTotal}</div><div class="lbl">Toplam soru</div></div>
-    <div class="week-stat"><div class="num">${activeDays}</div><div class="lbl">Aktif gün</div></div>
-    <div class="week-stat"><div class="num">${weekPomos}</div><div class="lbl">Tur</div></div>
-    <div class="week-stat"><div class="num">${weekStars} ⭐</div><div class="lbl">Yıldız</div></div>`;
-
-  // ── Ödül Sistemi ──────────────────────────────────────
-  const REWARDS=[
-    {minStars:0, minSoru:0,   emoji:'🌱', title:'Başlangıç',        desc:'Henüz veri toplanıyor. Çalışmaya devam!',            color:'var(--bg-sec)'},
-    {minStars:3, minSoru:30,  emoji:'🥉', title:'Bronz Hafta',      desc:'İyi bir başlangıç! Biraz daha sessiz çalış.',         color:'#CD7F32'},
-    {minStars:6, minSoru:60,  emoji:'🥈', title:'Gümüş Hafta',      desc:'Harika! Sessizlik alışkanlığın gelişiyor.',           color:'#9EA8B3'},
-    {minStars:10,minSoru:90,  emoji:'🥇', title:'Altın Hafta',      desc:'Muhteşem! Hem sessiz hem çalışkan bir hafta.',        color:'#F5C518'},
-    {minStars:14,minSoru:100, emoji:'💎', title:'Elmas Hafta',      desc:'İnanılmaz! Bu haftayı hak ediyorsun!',               color:'#63D1F4'},
-    {minStars:20,minSoru:120, emoji:'🏆', title:'Şampiyon Hafta',   desc:'Tam hedef! Tüm sorular + mükemmel sessizlik. BRAVİ!', color:'var(--accent-dark)'},
+function showCelebration(){
+  const msgs=[
+    ['🏆 Mükemmel! '+stars+' yıldız!','Sınıf bugün tam puan aldı. Deniz Öğretmen çok gurur duyuyor!'],
+    ['🎉 Harika! '+stars+' yıldız!','Çocuklar bugün gerçekten çok iyi dinlediler.'],
+    ['👏 Güzel! '+stars+' yıldız!','Sessizlik hedefine büyük ölçüde ulaşıldı.'],
+    ['👍 İyi! '+stars+' yıldız!','Bir sonraki derste daha da iyisi hedeflenebilir.'],
+    ['💪 Başlangıç! '+stars+' yıldız','Sessizlik alışkanlığı zamanla gelişecek, devam edin!']
   ];
-  let reward=REWARDS[0];
-  for(const r of REWARDS){if(weekStars>=r.minStars&&weekTotal>=r.minSoru)reward=r;}
-  const rc=document.getElementById('reward-card');
-  const rcContent=document.getElementById('reward-content');
-  if(weekStars>0||weekTotal>0){
-    rc.style.display='block';
-    rc.style.borderColor=reward.color;
-    rcContent.innerHTML=`
-      <div style="display:flex;align-items:center;gap:14px;margin-bottom:10px;">
-        <div style="font-size:40px;line-height:1;">${reward.emoji}</div>
-        <div>
-          <div style="font-size:16px;font-weight:700;color:${reward.color};">${reward.title}</div>
-          <div style="font-size:13px;color:var(--text-sec);margin-top:2px;">${reward.desc}</div>
-        </div>
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        ${REWARDS.slice(1).map(r=>{
-          const achieved=weekStars>=r.minStars&&weekTotal>=r.minSoru;
-          return`<div style="flex:1;min-width:80px;padding:8px;border-radius:var(--radius-md);background:${achieved?r.color+'22':'var(--bg-sec)'};border:1px solid ${achieved?r.color:'var(--border)'};text-align:center;opacity:${achieved?1:0.45};">
-            <div style="font-size:18px;">${r.emoji}</div>
-            <div style="font-size:10px;font-weight:600;color:${achieved?r.color:'var(--text-hint)'};">${r.title}</div>
-            <div style="font-size:10px;color:var(--text-hint);">${r.minStars}⭐ ${r.minSoru}soru</div>
-          </div>`;
-        }).join('')}
-      </div>`;
-  }else{rc.style.display='none';}
+  const idx=stars>=7?0:stars>=5?1:stars>=3?2:stars>=1?3:4;
+  document.getElementById('celebTitle').textContent=msgs[idx][0];
+  document.getElementById('celebMsg').textContent=msgs[idx][1];
+  document.getElementById('celebrate').classList.add('show');
+}
+function onThresh(el){ threshold=parseInt(el.value); document.getElementById('threshVal').textContent=threshold+' dB'; drawHist(); }
 
-  // Derse göre
-  const subjectWeekTotals=SUBJECTS.map((s,si)=>days.reduce((a,d)=>a+(data[d.key]?.subjects?.[si]||0),0));
-  const maxSubj=Math.max(...subjectWeekTotals,1);
-  document.getElementById('subject-week').innerHTML=SUBJECTS.map((s,i)=>`
-    <div class="subject-week-row">
-      <div class="subject-week-name">${s.name}</div>
-      <div class="subject-week-bar-wrap"><div class="subject-week-bar" style="width:${Math.round(subjectWeekTotals[i]/maxSubj*100)}%;background:${s.color};"></div></div>
-      <div class="subject-week-val">${subjectWeekTotals[i]} soru</div>
-    </div>`).join('');
+// ── KARŞILAŞTIRMA ──────────────────────────────────────────
+const SUBE_COLORS = ['#1D9E75','#2176AE','#EF9F27','#E24B4A','#9B59B6','#E67E22','#16A085','#8E44AD'];
+let activeTab = 'son';
 
-  // Günlük geçmiş
-  const hl=document.getElementById('history-list');
-  const sortedDays=days.filter(d=>data[d.key]).reverse();
-  if(!sortedDays.length){
-    hl.innerHTML='<div style="font-size:13px;color:var(--text-hint);padding:8px 0;">Bu haftaya ait kayıt yok.</div>';
-    return;
-  }
-  hl.innerHTML=sortedDays.map(d=>{
-    const rec=data[d.key];
-    const dateObj=new Date(d.key+'T12:00:00');
-    const dateStr=pad2(dateObj.getDate())+'/'+pad2(dateObj.getMonth()+1)+'/'+dateObj.getFullYear()+' · '+DAYS_TR[dateObj.getDay()];
-    const subjectStr=SUBJECTS.map((s,i)=>rec.subjects[i]>0?s.name+': '+rec.subjects[i]:'').filter(Boolean).join(', ')||'—';
-    const starsStr=rec.stars>0?'⭐'.repeat(Math.min(rec.stars,10))+(rec.stars>10?' +'+(rec.stars-10):''):'';
-    const quietMin=rec.quietSec?Math.floor(rec.quietSec/60)+'dk sessiz':'';
-    return`<div class="history-day">
-      <div class="history-day-header">
-        <span class="history-day-date">${dateStr}</span>
-        <span class="history-day-total">${rec.total} soru · ${rec.pomos||0} tur</span>
-      </div>
-      <div class="history-day-subjects">${subjectStr}</div>
-      ${starsStr||quietMin?`<div class="history-day-stars">${starsStr?starsStr+' ('+rec.stars+' yıldız)':''} ${quietMin?'· 🔇 '+quietMin:''}</div>`:''}
+function switchTab(tab){
+  activeTab = tab;
+  document.getElementById('tabSon').classList.toggle('active', tab==='son');
+  document.getElementById('tabOrtalama').classList.toggle('active', tab==='ort');
+  document.getElementById('tabSonContent').style.display = tab==='son'?'block':'none';
+  document.getElementById('tabOrtalamaContent').style.display = tab==='ort'?'block':'none';
+  if(tab==='ort') renderAvgChart();
+}
+
+function renderComp(){
+  const data = loadData();
+  renderHistoryList(data);
+  renderBarChart(data);
+  renderAvgChart(data);
+  renderRankList(data);
+}
+
+function renderHistoryList(data){
+  const el = document.getElementById('historyList');
+  if(!data.length){ el.innerHTML='<div class="empty-msg">Henüz ölçüm yok.<br>Bir ders tamamlayın!</div>'; return; }
+  const sorted = [...data].sort((a,b)=>b.ts-a.ts).slice(0,20);
+  el.innerHTML = sorted.map((r,i)=>{
+    const pct = Math.round((r.stars/MAX_STARS)*100);
+    const medals = ['🥇','🥈','🥉'];
+    return `<div class="hist-item">
+      <span class="hist-sube">${r.sube}</span>
+      <div class="hist-bar-wrap"><div class="hist-bar" style="width:${pct}%;background:${SUBE_COLORS[i%SUBE_COLORS.length]}"></div></div>
+      <span class="hist-stars">${'★'.repeat(r.stars)||'—'}</span>
+      <span class="hist-date">${r.date}</span>
     </div>`;
   }).join('');
 }
 
-// ── Init ──────────────────────────────────────────────
-loadToday();
-renderSubjects();
-updateTimerDisplay();
-// Yıldız sayacı göstergesi
-document.getElementById('star-timer-val').textContent=pad(starIntervalMin)+':00';
+function renderBarChart(data){
+  const canvas = document.getElementById('compCanvas');
+  const ctx = canvas.getContext('2d');
+  // son ders per şube
+  const map = {};
+  data.forEach(r=>{ if(!map[r.sube]||r.ts>map[r.sube].ts) map[r.sube]=r; });
+  const subes = Object.keys(map).sort();
+  if(!subes.length){
+    const dpr=window.devicePixelRatio||1, W=canvas.offsetWidth*dpr, H=200*dpr;
+    canvas.width=W; canvas.height=H; ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='#aaa'; ctx.font=(13*dpr)+'px Nunito,sans-serif'; ctx.textAlign='center';
+    ctx.fillText('Henüz ölçüm yok',W/2,H/2); return;
+  }
+  drawBarChart(ctx, canvas, subes, subes.map(s=>map[s].stars), 'Son Ders Yıldızları');
+}
+
+function renderAvgChart(data){
+  data = data || loadData();
+  const canvas = document.getElementById('avgCanvas');
+  const ctx = canvas.getContext('2d');
+  const map = {};
+  data.forEach(r=>{
+    if(!map[r.sube]) map[r.sube]={sum:0,count:0};
+    map[r.sube].sum+=r.stars; map[r.sube].count++;
+  });
+  const subes = Object.keys(map).sort();
+  if(!subes.length){
+    const dpr=window.devicePixelRatio||1, W=canvas.offsetWidth*dpr, H=200*dpr;
+    canvas.width=W; canvas.height=H; ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='#aaa'; ctx.font=(13*dpr)+'px Nunito,sans-serif'; ctx.textAlign='center';
+    ctx.fillText('Henüz ölçüm yok',W/2,H/2); return;
+  }
+  const avgs = subes.map(s=>parseFloat((map[s].sum/map[s].count).toFixed(1)));
+  drawBarChart(ctx, canvas, subes, avgs, 'Ortalama Yıldız');
+}
+
+function drawBarChart(ctx, canvas, labels, values, title){
+  const dpr=window.devicePixelRatio||1;
+  const W=canvas.offsetWidth*dpr, H=200*dpr;
+  canvas.width=W; canvas.height=H; ctx.clearRect(0,0,W,H);
+  const pad={l:36*dpr,r:12*dpr,t:24*dpr,b:40*dpr};
+  const chartW=W-pad.l-pad.r, chartH=H-pad.t-pad.b;
+  const maxVal=Math.max(...values,MAX_STARS);
+  // grid
+  ctx.strokeStyle='rgba(0,0,0,0.07)'; ctx.lineWidth=1;
+  [0,2,4,6,8].forEach(v=>{
+    if(v>maxVal) return;
+    const y=pad.t+chartH-(v/maxVal)*chartH;
+    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(pad.l+chartW,y); ctx.stroke();
+    ctx.fillStyle='rgba(0,0,0,0.35)'; ctx.font=(9*dpr)+'px Nunito,sans-serif'; ctx.textAlign='right';
+    ctx.fillText(v,pad.l-4*dpr,y+3*dpr);
+  });
+  // bars
+  const bw=Math.min(chartW/labels.length*0.55, 60*dpr);
+  const gap=chartW/labels.length;
+  labels.forEach((lbl,i)=>{
+    const x=pad.l+i*gap+gap/2-bw/2;
+    const bh=(values[i]/maxVal)*chartH;
+    const y=pad.t+chartH-bh;
+    const color=SUBE_COLORS[i%SUBE_COLORS.length];
+    ctx.fillStyle=color; ctx.globalAlpha=0.9;
+    const r=6*dpr;
+    ctx.beginPath();
+    ctx.moveTo(x+r,y); ctx.lineTo(x+bw-r,y);
+    ctx.quadraticCurveTo(x+bw,y,x+bw,y+r);
+    ctx.lineTo(x+bw,y+bh); ctx.lineTo(x,y+bh);
+    ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y);
+    ctx.closePath(); ctx.fill();
+    ctx.globalAlpha=1;
+    // value on bar
+    ctx.fillStyle=color; ctx.font='bold '+(11*dpr)+'px Nunito,sans-serif'; ctx.textAlign='center';
+    const dispVal = Number.isInteger(values[i]) ? values[i] : values[i].toFixed(1);
+    ctx.fillText(dispVal+'★', x+bw/2, y-5*dpr);
+    // label
+    ctx.fillStyle='rgba(0,0,0,0.5)'; ctx.font=(10*dpr)+'px Nunito,sans-serif';
+    ctx.fillText(lbl, x+bw/2, pad.t+chartH+18*dpr);
+  });
+}
+
+function renderRankList(data){
+  const el = document.getElementById('rankList');
+  const map = {};
+  data.forEach(r=>{
+    if(!map[r.sube]) map[r.sube]={sum:0,count:0};
+    map[r.sube].sum+=r.stars; map[r.sube].count++;
+  });
+  const subes = Object.keys(map).sort((a,b)=>(map[b].sum/map[b].count)-(map[a].sum/map[a].count));
+  if(!subes.length){ el.innerHTML='<div class="empty-msg">Henüz veri yok</div>'; return; }
+  const medals = ['🥇','🥈','🥉'];
+  el.innerHTML = subes.map((s,i)=>{
+    const avg = (map[s].sum/map[s].count).toFixed(1);
+    const pct = Math.round((parseFloat(avg)/MAX_STARS)*100);
+    return `<div class="hist-item">
+      <span style="font-size:18px">${medals[i]||'  '}</span>
+      <span class="hist-sube">${s}</span>
+      <div class="hist-bar-wrap"><div class="hist-bar" style="width:${pct}%;background:${SUBE_COLORS[i%SUBE_COLORS.length]}"></div></div>
+      <span class="hist-stars" style="color:${SUBE_COLORS[i%SUBE_COLORS.length]}">${avg}★</span>
+      <span class="hist-date">${map[s].count} ders</span>
+    </div>`;
+  }).join('');
+}
+
+// ── İLK ÇALIŞMA ────────────────────────────────────────────
+setTimeout(()=>{ drawHist(); },200);
 </script>
 </body>
 </html>
