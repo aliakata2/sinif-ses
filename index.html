@@ -114,7 +114,6 @@ canvas { width:100%; display:block; border-radius:8px; }
 <body>
 <div class="wrap">
 
-<!-- ŞUBE SEÇİM EKRANI -->
 <div id="screenSube" class="screen active">
   <div class="start-screen">
     <div class="logo">🎓</div>
@@ -146,7 +145,6 @@ canvas { width:100%; display:block; border-radius:8px; }
   </div>
 </div>
 
-<!-- ÖLÇÜM EKRANI -->
 <div id="screenDers" class="screen">
   <div class="header">
     <button class="header-back" onclick="backToSube()">←</button>
@@ -208,7 +206,6 @@ canvas { width:100%; display:block; border-radius:8px; }
   </div>
 </div>
 
-<!-- KARŞILAŞTIRMA EKRANI -->
 <div id="screenComp" class="screen">
   <div class="comp-header">
     <button class="header-back" onclick="backToSube()">←</button>
@@ -245,9 +242,7 @@ canvas { width:100%; display:block; border-radius:8px; }
   <button class="clear-btn" onclick="clearData()">🗑 Tüm verileri sil</button>
 </div>
 
-</div><!-- /wrap -->
-
-<script>
+</div><script>
 // ── STATE ──────────────────────────────────────────────────
 const TOTAL_SEC = 40*60, STAR_INTERVAL = 5*60, MAX_STARS = 8, HIST_POINTS = 480;
 const STORAGE_KEY = 'sinif_ses_v1';
@@ -368,14 +363,27 @@ function drawHist(){
   [10,20,30,40].forEach(m=>{ const x=(m*60/5)*barW; hCtx.fillText(m+'dk',x,H-2*dpr); });
 }
 
-// ── MİKROFON ───────────────────────────────────────────────
+// ── MİKROFON (DÜZELTİLMİŞ SEKTÖR) ───────────────────────────
 function getCurrentDb(){
   if(!analyser) return 20;
   const d=new Uint8Array(analyser.frequencyBinCount);
   analyser.getByteFrequencyData(d);
-  const rms=Math.sqrt(d.reduce((s,v)=>s+v*v,0)/d.length);
-  return rms>0?Math.round(20*Math.log10(rms/255)*-1+20):20;
+  
+  let sum = 0;
+  for(let i = 0; i < d.length; i++) {
+    sum += d[i] * d[i];
+  }
+  const rms = Math.sqrt(sum / d.length);
+  
+  if (rms <= 0) return 20;
+  
+  // Gürültü arttıkça desibel değerini doğru orantılı arttıran formül
+  const dbfs = 20 * Math.log10(rms / 255); 
+  const finalDb = Math.round(dbfs + 90); 
+  
+  return Math.max(20, Math.min(90, finalDb));
 }
+
 function measureLoop(){
   if(!running) return;
   if(!paused){
@@ -505,7 +513,6 @@ function renderHistoryList(data){
   const sorted = [...data].sort((a,b)=>b.ts-a.ts).slice(0,20);
   el.innerHTML = sorted.map((r,i)=>{
     const pct = Math.round((r.stars/MAX_STARS)*100);
-    const medals = ['🥇','🥈','🥉'];
     return `<div class="hist-item">
       <span class="hist-sube">${r.sube}</span>
       <div class="hist-bar-wrap"><div class="hist-bar" style="width:${pct}%;background:${SUBE_COLORS[i%SUBE_COLORS.length]}"></div></div>
@@ -518,7 +525,6 @@ function renderHistoryList(data){
 function renderBarChart(data){
   const canvas = document.getElementById('compCanvas');
   const ctx = canvas.getContext('2d');
-  // son ders per şube
   const map = {};
   data.forEach(r=>{ if(!map[r.sube]||r.ts>map[r.sube].ts) map[r.sube]=r; });
   const subes = Object.keys(map).sort();
@@ -558,7 +564,7 @@ function drawBarChart(ctx, canvas, labels, values, title){
   const pad={l:36*dpr,r:12*dpr,t:24*dpr,b:40*dpr};
   const chartW=W-pad.l-pad.r, chartH=H-pad.t-pad.b;
   const maxVal=Math.max(...values,MAX_STARS);
-  // grid
+  
   ctx.strokeStyle='rgba(0,0,0,0.07)'; ctx.lineWidth=1;
   [0,2,4,6,8].forEach(v=>{
     if(v>maxVal) return;
@@ -567,7 +573,7 @@ function drawBarChart(ctx, canvas, labels, values, title){
     ctx.fillStyle='rgba(0,0,0,0.35)'; ctx.font=(9*dpr)+'px Nunito,sans-serif'; ctx.textAlign='right';
     ctx.fillText(v,pad.l-4*dpr,y+3*dpr);
   });
-  // bars
+  
   const bw=Math.min(chartW/labels.length*0.55, 60*dpr);
   const gap=chartW/labels.length;
   labels.forEach((lbl,i)=>{
@@ -584,11 +590,11 @@ function drawBarChart(ctx, canvas, labels, values, title){
     ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y);
     ctx.closePath(); ctx.fill();
     ctx.globalAlpha=1;
-    // value on bar
+    
     ctx.fillStyle=color; ctx.font='bold '+(11*dpr)+'px Nunito,sans-serif'; ctx.textAlign='center';
     const dispVal = Number.isInteger(values[i]) ? values[i] : values[i].toFixed(1);
     ctx.fillText(dispVal+'★', x+bw/2, y-5*dpr);
-    // label
+    
     ctx.fillStyle='rgba(0,0,0,0.5)'; ctx.font=(10*dpr)+'px Nunito,sans-serif';
     ctx.fillText(lbl, x+bw/2, pad.t+chartH+18*dpr);
   });
@@ -617,7 +623,6 @@ function renderRankList(data){
   }).join('');
 }
 
-// ── İLK ÇALIŞMA ────────────────────────────────────────────
 setTimeout(()=>{ drawHist(); },200);
 </script>
 </body>
