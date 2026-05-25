@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Sessizlik Oyunu</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --green:#1D9E75; --green-light:#E1F5EE; --green-dark:#0F6E56;
+  --red:#E24B4A; --red-light:#FCEBEB; --red-dark:#A32D2D;
+  --amber:#EF9F27; --amber-light:#FAEEDA; --amber-dark:#BA7517;
+  --blue:#2176AE; --blue-light:#E6F1FB;
+  --bg:#F7F7F5; --card:#FFFFFF; --border:rgba(0,0,0,0.08);
+  --text:#1a1a1a; --muted:#888; --radius:16px;
+}
+body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+.wrap { max-width:480px; margin:0 auto; padding:16px; }
+
+/* ŞUBE GİRİŞ EKRANI */
+.screen { display:none; }
+.screen.active { display:block; }
+.start-screen { text-align:center; padding:40px 16px; }
+.start-screen .logo { font-size:52px; margin-bottom:12px; }
+.start-screen h1 { font-size:22px; font-weight:800; margin-bottom:4px; }
+.start-screen p { font-size:13px; color:var(--muted); margin-bottom:32px; }
+.sube-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:16px; box-shadow:0 1px 4px rgba(0,0,0,0.05); text-align:left; }
+.sube-card label { font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:8px; }
+.sube-input-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.sinif-sel { flex:1; min-width:80px; padding:10px 12px; border-radius:10px; border:1.5px solid var(--border); font-family:'Nunito',sans-serif; font-size:15px; font-weight:700; background:var(--bg); color:var(--text); appearance:none; -webkit-appearance:none; }
+.sinif-sel:focus { outline:none; border-color:var(--green); }
+.sube-btns { display:flex; gap:6px; flex-wrap:wrap; }
+.sube-btn { padding:8px 16px; border-radius:10px; border:1.5px solid var(--border); background:var(--bg); font-family:'Nunito',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:all 0.15s; color:var(--text); }
+.sube-btn.sel { background:var(--green); color:#fff; border-color:var(--green); }
+.sube-btn:active { transform:scale(0.96); }
+.btn-basla { width:100%; padding:16px; border-radius:14px; border:none; background:var(--green); color:#fff; font-family:'Nunito',sans-serif; font-size:16px; font-weight:800; cursor:pointer; transition:all 0.15s; margin-top:8px; }
+.btn-basla:disabled { background:#ccc; color:#999; }
+.btn-basla:active { transform:scale(0.98); }
+.secim-label { font-size:15px; font-weight:800; color:var(--green); margin-top:12px; min-height:24px; text-align:center; }
+
+/* ÖLÇÜM EKRANI */
+.header { display:flex; align-items:center; gap:10px; padding:8px 0 14px; }
+.header-back { background:none; border:none; font-size:20px; cursor:pointer; padding:4px 8px; border-radius:8px; }
+.header-back:active { background:var(--border); }
+.header-title { font-size:16px; font-weight:800; }
+.header-sube { font-size:13px; font-weight:700; color:var(--green); background:var(--green-light); padding:3px 10px; border-radius:20px; margin-left:auto; }
+.mic-err { background:var(--red-light); color:var(--red-dark); border-radius:10px; padding:10px 14px; font-size:13px; margin-bottom:12px; display:none; }
+.top-row { display:flex; gap:10px; margin-bottom:12px; }
+.meter-box { flex:0 0 130px; background:var(--card); border-radius:var(--radius); border:1px solid var(--border); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:16px 8px; box-shadow:0 1px 4px rgba(0,0,0,0.04); }
+.db-big { font-size:54px; font-weight:800; line-height:1; color:var(--text); transition:color 0.2s; }
+.db-unit { font-size:12px; color:var(--muted); margin-top:2px; }
+.status-pill { margin-top:8px; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; background:var(--bg); color:var(--muted); transition:all 0.2s; }
+.info-grid { flex:1; display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.info-card { background:var(--card); border-radius:12px; border:1px solid var(--border); padding:10px 12px; box-shadow:0 1px 4px rgba(0,0,0,0.04); }
+.info-card .lbl { font-size:10px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px; }
+.info-card .val { font-size:20px; font-weight:800; color:var(--text); }
+.threshold-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px; margin-bottom:12px; box-shadow:0 1px 4px rgba(0,0,0,0.04); }
+.threshold-card .lbl { font-size:11px; color:var(--muted); font-weight:600; margin-bottom:8px; }
+.thresh-row { display:flex; align-items:center; gap:10px; }
+.thresh-row input[type=range] { flex:1; accent-color:var(--green); }
+.thresh-val { font-size:14px; font-weight:700; color:var(--text); min-width:48px; text-align:right; }
+.btn-row { display:flex; gap:8px; margin-bottom:12px; }
+.btn { flex:1; padding:12px 8px; border-radius:12px; border:none; font-family:'Nunito',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:all 0.15s; }
+.btn:active { transform:scale(0.97); }
+.btn-start { background:var(--green); color:#fff; }
+.btn-start:disabled { background:#ccc; color:#999; }
+.btn-pause { background:var(--amber); color:#fff; }
+.btn-pause:disabled { background:#ccc; color:#999; }
+.btn-reset { background:var(--card); color:var(--text); border:1px solid var(--border); }
+.chart-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px; margin-bottom:12px; box-shadow:0 1px 4px rgba(0,0,0,0.04); }
+.chart-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.chart-header span { font-size:11px; color:var(--muted); font-weight:600; }
+.live-dot { color:var(--green); font-weight:700; font-size:11px; display:none; }
+canvas { width:100%; display:block; border-radius:8px; }
+.stars-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px; margin-bottom:12px; box-shadow:0 1px 4px rgba(0,0,0,0.04); }
+.stars-card .lbl { font-size:11px; color:var(--muted); font-weight:600; margin-bottom:10px; }
+.stars-row { display:flex; gap:6px; flex-wrap:wrap; }
+.star-slot { width:38px; height:38px; border-radius:50%; background:var(--bg); border:1.5px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:20px; color:#ddd; transition:all 0.3s; }
+.star-slot.earned { background:var(--amber-light); border-color:var(--amber); color:var(--amber); transform:scale(1.1); }
+
+/* KUTLAMA */
+.celebrate { display:none; background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:24px 16px; text-align:center; margin-bottom:12px; box-shadow:0 1px 4px rgba(0,0,0,0.04); }
+.celebrate.show { display:block; }
+.celebrate .emoji { font-size:56px; line-height:1; margin-bottom:8px; }
+.celebrate h2 { font-size:20px; font-weight:800; margin-bottom:6px; }
+.celebrate p { font-size:13px; color:var(--muted); margin-bottom:14px; }
+.celebrate-btns { display:flex; gap:8px; }
+.celebrate-btns .btn { flex:1; }
+
+/* KARŞILAŞTIRMA EKRANI */
+.comp-header { display:flex; align-items:center; gap:10px; padding:8px 0 14px; }
+.comp-title { font-size:16px; font-weight:800; }
+.comp-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:14px; margin-bottom:12px; box-shadow:0 1px 4px rgba(0,0,0,0.04); }
+.comp-card .lbl { font-size:11px; color:var(--muted); font-weight:600; margin-bottom:10px; }
+.empty-msg { text-align:center; color:var(--muted); font-size:13px; padding:24px 0; }
+.history-list { display:flex; flex-direction:column; gap:8px; }
+.hist-item { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:10px; background:var(--bg); }
+.hist-sube { font-size:13px; font-weight:800; min-width:44px; }
+.hist-bar-wrap { flex:1; height:10px; background:var(--border); border-radius:6px; overflow:hidden; }
+.hist-bar { height:100%; border-radius:6px; background:var(--amber); transition:width 0.5s; }
+.hist-stars { font-size:13px; font-weight:700; color:var(--amber-dark); min-width:36px; text-align:right; }
+.hist-date { font-size:10px; color:var(--muted); min-width:48px; text-align:right; }
+.clear-btn { width:100%; padding:10px; border-radius:10px; border:1px solid var(--red-light); background:var(--red-light); color:var(--red-dark); font-family:'Nunito',sans-serif; font-size:13px; font-weight:700; cursor:pointer; margin-top:4px; }
+.clear-btn:active { transform:scale(0.98); }
+.nav-tabs { display:flex; gap:0; background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:16px; box-shadow:0 1px 4px rgba(0,0,0,0.04); }
+.nav-tab { flex:1; padding:12px 8px; border:none; background:none; font-family:'Nunito',sans-serif; font-size:13px; font-weight:700; cursor:pointer; color:var(--muted); transition:all 0.15s; }
+.nav-tab.active { background:var(--green); color:#fff; border-radius:12px; }
+.nav-tab:active { transform:scale(0.97); }
+.ranking-badge { font-size:18px; margin-right:4px; }
+.chart-wrap-comp { position:relative; height:200px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ŞUBE SEÇİM EKRANI -->
+<div id="screenSube" class="screen active">
+  <div class="start-screen">
+    <div class="logo">🎓</div>
+    <h1>Sınıf Ses Ölçer</h1>
+    <p>Deniz Öğretmen'in sınıf yardımcısı</p>
+
+    <div class="sube-card">
+      <label>Sınıf Seçin</label>
+      <div class="sube-input-row">
+        <select class="sinif-sel" id="sinifSel" onchange="updateSecim()">
+          <option value="">-- sınıf --</option>
+          <option>1</option><option>2</option><option>3</option>
+          <option>4</option><option>5</option><option>6</option>
+          <option>7</option><option>8</option>
+        </select>
+        <div class="sube-btns" id="subeBtns">
+          <button class="sube-btn" onclick="secSube(this,'A')">A</button>
+          <button class="sube-btn" onclick="secSube(this,'B')">B</button>
+          <button class="sube-btn" onclick="secSube(this,'C')">C</button>
+          <button class="sube-btn" onclick="secSube(this,'D')">D</button>
+          <button class="sube-btn" onclick="secSube(this,'E')">E</button>
+        </div>
+      </div>
+      <div class="secim-label" id="secimLabel">Sınıf ve şube seçin</div>
+    </div>
+
+    <button class="btn-basla" id="btnBasla" onclick="goDers()" disabled>▶ Derse Başla</button>
+    <button class="btn-basla" style="background:var(--card);color:var(--text);border:1px solid var(--border);margin-top:8px;" onclick="goComp()">📊 Şube Karşılaştır</button>
+  </div>
+</div>
+
+<!-- ÖLÇÜM EKRANI -->
+<div id="screenDers" class="screen">
+  <div class="header">
+    <button class="header-back" onclick="backToSube()">←</button>
+    <span class="header-title">Ses Ölçer</span>
+    <span class="header-sube" id="headerSube">—</span>
+  </div>
+
+  <div class="mic-err" id="micErr">⚠️ Mikrofon izni gerekli. Lütfen tarayıcı izinlerini kontrol edin.</div>
+
+  <div class="top-row">
+    <div class="meter-box">
+      <div class="db-big" id="dbBig">—</div>
+      <div class="db-unit">desibel</div>
+      <div class="status-pill" id="statusPill">bekliyor</div>
+    </div>
+    <div class="info-grid">
+      <div class="info-card"><div class="lbl">sessiz süre</div><div class="val" id="quietTime">0:00</div></div>
+      <div class="info-card"><div class="lbl">geçen süre</div><div class="val" id="elapsedTime">0:00</div></div>
+      <div class="info-card"><div class="lbl">ort. dB</div><div class="val" id="avgDb">—</div></div>
+      <div class="info-card"><div class="lbl">sonraki ★</div><div class="val" id="nextStar">5:00</div></div>
+    </div>
+  </div>
+
+  <div class="threshold-card">
+    <div class="lbl">SESLİZLİK EŞİĞİ</div>
+    <div class="thresh-row">
+      <input type="range" id="thresh" min="20" max="70" value="50" step="1" oninput="onThresh(this)">
+      <span class="thresh-val" id="threshVal">50 dB</span>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-start" id="startBtn" onclick="startSession()">▶ Başlat</button>
+    <button class="btn btn-pause" id="pauseBtn" onclick="togglePause()" disabled>⏸ Duraklat</button>
+    <button class="btn btn-reset" onclick="resetSession()">↺ Sıfırla</button>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-header">
+      <span>40 DAKİKA dB AKIŞI</span>
+      <span class="live-dot" id="liveTag">● canlı</span>
+    </div>
+    <canvas id="histCanvas" style="height:160px;"></canvas>
+  </div>
+
+  <div class="stars-card">
+    <div class="lbl">KAZANILAN YILDIZLAR — her 5 dk sessizlik için 1 ★ (maks. 8)</div>
+    <div class="stars-row" id="starsRow"></div>
+  </div>
+
+  <div class="celebrate" id="celebrate">
+    <div class="emoji">🎉</div>
+    <h2 id="celebTitle"></h2>
+    <p id="celebMsg"></p>
+    <div class="celebrate-btns">
+      <button class="btn btn-reset" onclick="resetSession()">↺ Yeni ders</button>
+      <button class="btn btn-start" onclick="goComp()">📊 Karşılaştır</button>
+    </div>
+  </div>
+</div>
+
+<!-- KARŞILAŞTIRMA EKRANI -->
+<div id="screenComp" class="screen">
+  <div class="comp-header">
+    <button class="header-back" onclick="backToSube()">←</button>
+    <span class="comp-title">Şube Karşılaştırması</span>
+  </div>
+
+  <div class="nav-tabs">
+    <button class="nav-tab active" id="tabSon" onclick="switchTab('son')">Son Dersler</button>
+    <button class="nav-tab" id="tabOrtalama" onclick="switchTab('ort')">Genel Ortalama</button>
+  </div>
+
+  <div id="tabSonContent">
+    <div class="comp-card">
+      <div class="lbl">SON DERS YILDIZLARI — ŞUBEYE GÖRE</div>
+      <div class="chart-wrap-comp"><canvas id="compCanvas"></canvas></div>
+    </div>
+    <div class="comp-card">
+      <div class="lbl">TÜM ÖLÇÜMLER GEÇMİŞİ</div>
+      <div class="history-list" id="historyList"></div>
+    </div>
+  </div>
+
+  <div id="tabOrtalamaContent" style="display:none;">
+    <div class="comp-card">
+      <div class="lbl">ŞUBE BAŞINA ORTALAMA YILDIZ</div>
+      <div class="chart-wrap-comp"><canvas id="avgCanvas"></canvas></div>
+    </div>
+    <div class="comp-card">
+      <div class="lbl">SIRALAMA</div>
+      <div class="history-list" id="rankList"></div>
+    </div>
+  </div>
+
+  <button class="clear-btn" onclick="clearData()">🗑 Tüm verileri sil</button>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+// ── STATE ──────────────────────────────────────────────────
+const TOTAL_SEC = 40*60, STAR_INTERVAL = 5*60, MAX_STARS = 8, HIST_POINTS = 480;
+const STORAGE_KEY = 'sinif_ses_v1';
+
+let selectedSinif = '', selectedSube = '', currentSube = '';
+let audioCtx, analyser, source, stream;
+let running=false, paused=false;
+let elapsedSec=0, quietSec=0, quietStreak=0;
+let dbHistory=[], dbBuffer=[], bufferSec=0;
+let timerInt=null, animId=null;
+let threshold=50, dbSum=0, dbCount=0, stars=0;
+
+// ── STORAGE ────────────────────────────────────────────────
+function loadData() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch(e){ return []; }
+}
+function saveRecord(sube, starCount, avgDb) {
+  const data = loadData();
+  data.push({ sube, stars: starCount, avgDb, date: new Date().toLocaleDateString('tr-TR'), ts: Date.now() });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+function clearData() {
+  if(confirm('Tüm ölçüm geçmişi silinecek. Emin misin?')) {
+    localStorage.removeItem(STORAGE_KEY);
+    renderComp();
+  }
+}
+
+// ── NAVİGASYON ──────────────────────────────────────────────
+function showScreen(id) {
+  ['screenSube','screenDers','screenComp'].forEach(s => {
+    document.getElementById(s).classList.remove('active');
+  });
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function backToSube() { stopSession(); showScreen('screenSube'); }
+function goDers() {
+  if(!selectedSinif || !selectedSube) return;
+  currentSube = selectedSinif + '/' + selectedSube;
+  document.getElementById('headerSube').textContent = currentSube + ' Şubesi';
+  resetSession();
+  showScreen('screenDers');
+}
+function goComp() { renderComp(); showScreen('screenComp'); }
+
+// ── ŞUBE SEÇİM ─────────────────────────────────────────────
+function secSube(el, sube) {
+  selectedSube = sube;
+  document.querySelectorAll('.sube-btn').forEach(b => b.classList.remove('sel'));
+  el.classList.add('sel');
+  updateSecim();
+}
+document.getElementById('sinifSel').addEventListener('change', function(){ selectedSinif = this.value; updateSecim(); });
+function updateSecim() {
+  selectedSinif = document.getElementById('sinifSel').value;
+  const lbl = document.getElementById('secimLabel');
+  const btn = document.getElementById('btnBasla');
+  if(selectedSinif && selectedSube) {
+    lbl.textContent = '✓ ' + selectedSinif + '. Sınıf ' + selectedSube + ' Şubesi seçildi';
+    btn.disabled = false;
+  } else {
+    lbl.textContent = selectedSinif ? 'Şube seçin' : selectedSube ? 'Sınıf seçin' : 'Sınıf ve şube seçin';
+    btn.disabled = true;
+  }
+}
+
+// ── YILDIZ SLOTLARI ────────────────────────────────────────
+const starsRow = document.getElementById('starsRow');
+for(let i=0;i<MAX_STARS;i++){
+  const s=document.createElement('div'); s.className='star-slot'; s.id='star-'+i; s.textContent='★'; starsRow.appendChild(s);
+}
+
+// ── RENK ───────────────────────────────────────────────────
+function getColor(db){ return db<=threshold?'#1D9E75':db<=threshold+10?'#EF9F27':'#E24B4A'; }
+function fmt(s){ return Math.floor(s/60)+':'+(s%60).toString().padStart(2,'0'); }
+
+// ── 40 DK GRAFİĞİ ──────────────────────────────────────────
+const histCanvas=document.getElementById('histCanvas'), hCtx=histCanvas.getContext('2d');
+function drawHist(){
+  const dpr=window.devicePixelRatio||1, W=histCanvas.offsetWidth*dpr, H=histCanvas.offsetHeight*dpr;
+  histCanvas.width=W; histCanvas.height=H; hCtx.clearRect(0,0,W,H);
+  const MIN=20,MAX=90;
+  hCtx.strokeStyle='rgba(0,0,0,0.06)'; hCtx.lineWidth=1;
+  [30,45,60,75].forEach(db=>{
+    const y=H-((db-MIN)/(MAX-MIN))*H;
+    hCtx.beginPath(); hCtx.moveTo(0,y); hCtx.lineTo(W,y); hCtx.stroke();
+    hCtx.fillStyle='rgba(0,0,0,0.3)'; hCtx.font=(9*dpr)+'px sans-serif';
+    hCtx.fillText(db+'dB',2*dpr,y-2*dpr);
+  });
+  const ty=H-((threshold-MIN)/(MAX-MIN))*H;
+  hCtx.setLineDash([5*dpr,4*dpr]); hCtx.strokeStyle='rgba(239,159,39,0.8)'; hCtx.lineWidth=2*dpr;
+  hCtx.beginPath(); hCtx.moveTo(0,ty); hCtx.lineTo(W,ty); hCtx.stroke(); hCtx.setLineDash([]);
+  const barW=W/HIST_POINTS;
+  let streak=0;
+  dbHistory.forEach((v,i)=>{
+    if(v<=threshold){ streak+=5; } else { streak=0; }
+    if(streak>0&&streak%STAR_INTERVAL===0){
+      const x=i*barW;
+      hCtx.strokeStyle='rgba(239,159,39,0.5)'; hCtx.lineWidth=2*dpr;
+      hCtx.beginPath(); hCtx.moveTo(x,0); hCtx.lineTo(x,H); hCtx.stroke();
+      hCtx.fillStyle='rgba(239,159,39,1)'; hCtx.font=(13*dpr)+'px sans-serif';
+      hCtx.fillText('★',x-7*dpr,14*dpr);
+    }
+  });
+  dbHistory.forEach((v,i)=>{
+    const c=Math.max(MIN,Math.min(MAX,v)), bH=((c-MIN)/(MAX-MIN))*H;
+    hCtx.fillStyle=getColor(v); hCtx.globalAlpha=0.9;
+    hCtx.fillRect(i*barW,H-bH,Math.max(1,barW-0.5),bH);
+  });
+  hCtx.globalAlpha=1;
+  if(dbHistory.length>0&&dbHistory.length<HIST_POINTS){
+    const cx=dbHistory.length*barW;
+    hCtx.strokeStyle='rgba(0,0,0,0.2)'; hCtx.lineWidth=1.5*dpr; hCtx.setLineDash([]);
+    hCtx.beginPath(); hCtx.moveTo(cx,0); hCtx.lineTo(cx,H); hCtx.stroke();
+  }
+  hCtx.fillStyle='rgba(0,0,0,0.35)'; hCtx.font=(9*dpr)+'px sans-serif';
+  [10,20,30,40].forEach(m=>{ const x=(m*60/5)*barW; hCtx.fillText(m+'dk',x,H-2*dpr); });
+}
+
+// ── MİKROFON ───────────────────────────────────────────────
+function getCurrentDb(){
+  if(!analyser) return 20;
+  const d=new Uint8Array(analyser.frequencyBinCount);
+  analyser.getByteFrequencyData(d);
+  const rms=Math.sqrt(d.reduce((s,v)=>s+v*v,0)/d.length);
+  return rms>0?Math.round(20*Math.log10(rms/255)*-1+20):20;
+}
+function measureLoop(){
+  if(!running) return;
+  if(!paused){
+    const db=Math.max(20,Math.min(90,getCurrentDb()));
+    document.getElementById('dbBig').textContent=db;
+    document.getElementById('dbBig').style.color=getColor(db);
+    const sp=document.getElementById('statusPill');
+    if(db<=threshold){ sp.style.background='#E1F5EE'; sp.style.color='#0F6E56'; sp.textContent='✓ sessiz'; }
+    else { sp.style.background='#FCEBEB'; sp.style.color='#A32D2D'; sp.textContent='✗ gürültülü'; }
+  }
+  animId=requestAnimationFrame(measureLoop);
+}
+function tick(){
+  if(!running||paused) return;
+  const db=Math.max(20,Math.min(90,getCurrentDb()));
+  elapsedSec++;
+  if(db<=threshold){ quietSec++; quietStreak++; } else { quietStreak=0; }
+  if(quietStreak>0&&quietStreak%STAR_INTERVAL===0&&stars<MAX_STARS){
+    stars++;
+    const sl=document.getElementById('star-'+(stars-1));
+    if(sl) sl.className='star-slot earned';
+  }
+  dbSum+=db; dbCount++; bufferSec++; dbBuffer.push(db);
+  if(bufferSec>=5){
+    dbHistory.push(Math.round(dbBuffer.reduce((a,b)=>a+b,0)/dbBuffer.length));
+    dbBuffer=[]; bufferSec=0; drawHist();
+  }
+  document.getElementById('quietTime').textContent=fmt(quietSec);
+  document.getElementById('elapsedTime').textContent=fmt(elapsedSec);
+  document.getElementById('avgDb').textContent=dbCount>0?Math.round(dbSum/dbCount)+' dB':'—';
+  const toNext=STAR_INTERVAL-(quietStreak%STAR_INTERVAL);
+  document.getElementById('nextStar').textContent=stars>=MAX_STARS?'✓ tam':fmt(toNext);
+  if(elapsedSec>=TOTAL_SEC){ stopSession(); saveRecord(currentSube,stars,dbCount>0?Math.round(dbSum/dbCount):0); showCelebration(); }
+}
+
+async function startSession(){
+  document.getElementById('micErr').style.display='none';
+  try {
+    stream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
+    audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    analyser=audioCtx.createAnalyser(); analyser.fftSize=1024;
+    source=audioCtx.createMediaStreamSource(stream); source.connect(analyser);
+    running=true; paused=false;
+    document.getElementById('startBtn').disabled=true;
+    document.getElementById('pauseBtn').disabled=false;
+    document.getElementById('liveTag').style.display='block';
+    document.getElementById('celebrate').classList.remove('show');
+    animId=requestAnimationFrame(measureLoop);
+    timerInt=setInterval(tick,1000);
+  } catch(e){ document.getElementById('micErr').style.display='block'; }
+}
+function togglePause(){
+  if(!running) return; paused=!paused;
+  const btn=document.getElementById('pauseBtn');
+  const lt=document.getElementById('liveTag');
+  const sp=document.getElementById('statusPill');
+  if(paused){ btn.textContent='▶ Devam'; sp.textContent='duraklatıldı'; sp.style.background='#F7F7F5'; sp.style.color='#888'; lt.style.display='none'; }
+  else { btn.textContent='⏸ Duraklat'; lt.style.display='block'; }
+}
+function stopSession(){
+  running=false;
+  if(animId) cancelAnimationFrame(animId);
+  if(timerInt) clearInterval(timerInt);
+  if(stream) stream.getTracks().forEach(t=>t.stop());
+  if(audioCtx) audioCtx.close();
+  document.getElementById('startBtn').disabled=false;
+  document.getElementById('pauseBtn').disabled=true;
+  document.getElementById('liveTag').style.display='none';
+  const sp=document.getElementById('statusPill');
+  sp.textContent='bitti'; sp.style.background='#F7F7F5'; sp.style.color='#888';
+}
+function resetSession(){
+  stopSession();
+  elapsedSec=0; quietSec=0; quietStreak=0; dbSum=0; dbCount=0; stars=0;
+  dbHistory=[]; dbBuffer=[]; bufferSec=0;
+  document.getElementById('dbBig').textContent='—'; document.getElementById('dbBig').style.color='';
+  document.getElementById('quietTime').textContent='0:00';
+  document.getElementById('elapsedTime').textContent='0:00';
+  document.getElementById('avgDb').textContent='—';
+  document.getElementById('nextStar').textContent='5:00';
+  const sp=document.getElementById('statusPill');
+  sp.textContent='bekliyor'; sp.style.background='#F7F7F5'; sp.style.color='#888';
+  for(let i=0;i<MAX_STARS;i++){ const s=document.getElementById('star-'+i); if(s) s.className='star-slot'; }
+  document.getElementById('celebrate').classList.remove('show');
+  document.getElementById('pauseBtn').textContent='⏸ Duraklat';
+  hCtx.clearRect(0,0,histCanvas.width,histCanvas.height); drawHist();
+}
+function showCelebration(){
+  const msgs=[
+    ['🏆 Mükemmel! '+stars+' yıldız!','Sınıf bugün tam puan aldı. Deniz Öğretmen çok gurur duyuyor!'],
+    ['🎉 Harika! '+stars+' yıldız!','Çocuklar bugün gerçekten çok iyi dinlediler.'],
+    ['👏 Güzel! '+stars+' yıldız!','Sessizlik hedefine büyük ölçüde ulaşıldı.'],
+    ['👍 İyi! '+stars+' yıldız!','Bir sonraki derste daha da iyisi hedeflenebilir.'],
+    ['💪 Başlangıç! '+stars+' yıldız','Sessizlik alışkanlığı zamanla gelişecek, devam edin!']
+  ];
+  const idx=stars>=7?0:stars>=5?1:stars>=3?2:stars>=1?3:4;
+  document.getElementById('celebTitle').textContent=msgs[idx][0];
+  document.getElementById('celebMsg').textContent=msgs[idx][1];
+  document.getElementById('celebrate').classList.add('show');
+}
+function onThresh(el){ threshold=parseInt(el.value); document.getElementById('threshVal').textContent=threshold+' dB'; drawHist(); }
+
+// ── KARŞILAŞTIRMA ──────────────────────────────────────────
+const SUBE_COLORS = ['#1D9E75','#2176AE','#EF9F27','#E24B4A','#9B59B6','#E67E22','#16A085','#8E44AD'];
+let activeTab = 'son';
+
+function switchTab(tab){
+  activeTab = tab;
+  document.getElementById('tabSon').classList.toggle('active', tab==='son');
+  document.getElementById('tabOrtalama').classList.toggle('active', tab==='ort');
+  document.getElementById('tabSonContent').style.display = tab==='son'?'block':'none';
+  document.getElementById('tabOrtalamaContent').style.display = tab==='ort'?'block':'none';
+  if(tab==='ort') renderAvgChart();
+}
+
+function renderComp(){
+  const data = loadData();
+  renderHistoryList(data);
+  renderBarChart(data);
+  renderAvgChart(data);
+  renderRankList(data);
+}
+
+function renderHistoryList(data){
+  const el = document.getElementById('historyList');
+  if(!data.length){ el.innerHTML='<div class="empty-msg">Henüz ölçüm yok.<br>Bir ders tamamlayın!</div>'; return; }
+  const sorted = [...data].sort((a,b)=>b.ts-a.ts).slice(0,20);
+  el.innerHTML = sorted.map((r,i)=>{
+    const pct = Math.round((r.stars/MAX_STARS)*100);
+    const medals = ['🥇','🥈','🥉'];
+    return `<div class="hist-item">
+      <span class="hist-sube">${r.sube}</span>
+      <div class="hist-bar-wrap"><div class="hist-bar" style="width:${pct}%;background:${SUBE_COLORS[i%SUBE_COLORS.length]}"></div></div>
+      <span class="hist-stars">${'★'.repeat(r.stars)||'—'}</span>
+      <span class="hist-date">${r.date}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderBarChart(data){
+  const canvas = document.getElementById('compCanvas');
+  const ctx = canvas.getContext('2d');
+  // son ders per şube
+  const map = {};
+  data.forEach(r=>{ if(!map[r.sube]||r.ts>map[r.sube].ts) map[r.sube]=r; });
+  const subes = Object.keys(map).sort();
+  if(!subes.length){
+    const dpr=window.devicePixelRatio||1, W=canvas.offsetWidth*dpr, H=200*dpr;
+    canvas.width=W; canvas.height=H; ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='#aaa'; ctx.font=(13*dpr)+'px Nunito,sans-serif'; ctx.textAlign='center';
+    ctx.fillText('Henüz ölçüm yok',W/2,H/2); return;
+  }
+  drawBarChart(ctx, canvas, subes, subes.map(s=>map[s].stars), 'Son Ders Yıldızları');
+}
+
+function renderAvgChart(data){
+  data = data || loadData();
+  const canvas = document.getElementById('avgCanvas');
+  const ctx = canvas.getContext('2d');
+  const map = {};
+  data.forEach(r=>{
+    if(!map[r.sube]) map[r.sube]={sum:0,count:0};
+    map[r.sube].sum+=r.stars; map[r.sube].count++;
+  });
+  const subes = Object.keys(map).sort();
+  if(!subes.length){
+    const dpr=window.devicePixelRatio||1, W=canvas.offsetWidth*dpr, H=200*dpr;
+    canvas.width=W; canvas.height=H; ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='#aaa'; ctx.font=(13*dpr)+'px Nunito,sans-serif'; ctx.textAlign='center';
+    ctx.fillText('Henüz ölçüm yok',W/2,H/2); return;
+  }
+  const avgs = subes.map(s=>parseFloat((map[s].sum/map[s].count).toFixed(1)));
+  drawBarChart(ctx, canvas, subes, avgs, 'Ortalama Yıldız');
+}
+
+function drawBarChart(ctx, canvas, labels, values, title){
+  const dpr=window.devicePixelRatio||1;
+  const W=canvas.offsetWidth*dpr, H=200*dpr;
+  canvas.width=W; canvas.height=H; ctx.clearRect(0,0,W,H);
+  const pad={l:36*dpr,r:12*dpr,t:24*dpr,b:40*dpr};
+  const chartW=W-pad.l-pad.r, chartH=H-pad.t-pad.b;
+  const maxVal=Math.max(...values,MAX_STARS);
+  // grid
+  ctx.strokeStyle='rgba(0,0,0,0.07)'; ctx.lineWidth=1;
+  [0,2,4,6,8].forEach(v=>{
+    if(v>maxVal) return;
+    const y=pad.t+chartH-(v/maxVal)*chartH;
+    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(pad.l+chartW,y); ctx.stroke();
+    ctx.fillStyle='rgba(0,0,0,0.35)'; ctx.font=(9*dpr)+'px Nunito,sans-serif'; ctx.textAlign='right';
+    ctx.fillText(v,pad.l-4*dpr,y+3*dpr);
+  });
+  // bars
+  const bw=Math.min(chartW/labels.length*0.55, 60*dpr);
+  const gap=chartW/labels.length;
+  labels.forEach((lbl,i)=>{
+    const x=pad.l+i*gap+gap/2-bw/2;
+    const bh=(values[i]/maxVal)*chartH;
+    const y=pad.t+chartH-bh;
+    const color=SUBE_COLORS[i%SUBE_COLORS.length];
+    ctx.fillStyle=color; ctx.globalAlpha=0.9;
+    const r=6*dpr;
+    ctx.beginPath();
+    ctx.moveTo(x+r,y); ctx.lineTo(x+bw-r,y);
+    ctx.quadraticCurveTo(x+bw,y,x+bw,y+r);
+    ctx.lineTo(x+bw,y+bh); ctx.lineTo(x,y+bh);
+    ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y);
+    ctx.closePath(); ctx.fill();
+    ctx.globalAlpha=1;
+    // value on bar
+    ctx.fillStyle=color; ctx.font='bold '+(11*dpr)+'px Nunito,sans-serif'; ctx.textAlign='center';
+    const dispVal = Number.isInteger(values[i]) ? values[i] : values[i].toFixed(1);
+    ctx.fillText(dispVal+'★', x+bw/2, y-5*dpr);
+    // label
+    ctx.fillStyle='rgba(0,0,0,0.5)'; ctx.font=(10*dpr)+'px Nunito,sans-serif';
+    ctx.fillText(lbl, x+bw/2, pad.t+chartH+18*dpr);
+  });
+}
+
+function renderRankList(data){
+  const el = document.getElementById('rankList');
+  const map = {};
+  data.forEach(r=>{
+    if(!map[r.sube]) map[r.sube]={sum:0,count:0};
+    map[r.sube].sum+=r.stars; map[r.sube].count++;
+  });
+  const subes = Object.keys(map).sort((a,b)=>(map[b].sum/map[b].count)-(map[a].sum/map[a].count));
+  if(!subes.length){ el.innerHTML='<div class="empty-msg">Henüz veri yok</div>'; return; }
+  const medals = ['🥇','🥈','🥉'];
+  el.innerHTML = subes.map((s,i)=>{
+    const avg = (map[s].sum/map[s].count).toFixed(1);
+    const pct = Math.round((parseFloat(avg)/MAX_STARS)*100);
+    return `<div class="hist-item">
+      <span style="font-size:18px">${medals[i]||'  '}</span>
+      <span class="hist-sube">${s}</span>
+      <div class="hist-bar-wrap"><div class="hist-bar" style="width:${pct}%;background:${SUBE_COLORS[i%SUBE_COLORS.length]}"></div></div>
+      <span class="hist-stars" style="color:${SUBE_COLORS[i%SUBE_COLORS.length]}">${avg}★</span>
+      <span class="hist-date">${map[s].count} ders</span>
+    </div>`;
+  }).join('');
+}
+
+// ── İLK ÇALIŞMA ────────────────────────────────────────────
+setTimeout(()=>{ drawHist(); },200);
+</script>
+</body>
+</html>
