@@ -451,7 +451,7 @@ function stopSession(){
   if(audioCtx) audioCtx.close();
   document.getElementById('startBtn').disabled=false;
   document.getElementById('pauseBtn').disabled=true;
-  document.getElementById('liveTag').style.none;
+  document.getElementById('liveTag').style.display = 'none';
   const sp=document.getElementById('statusPill');
   sp.textContent='bitti'; sp.style.background='#F7F7F5'; sp.style.color='#888';
 }
